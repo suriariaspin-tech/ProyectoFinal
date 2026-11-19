@@ -5,59 +5,88 @@ import modelo.Usuario;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
-/** Registra, valida, edita y consulta avisos de objetos encontrados. */
+/** Registra y administra los avisos de objetos encontrados, estén recibidos o no. */
 public class GestorReportesHallazgo {
-    /** Avisos de hallazgo que no necesariamente representan objetos recibidos. */
+    /** Reportes de hallazgo que se mantienen separados de los objetos físicos. */
     private ArrayList<ReporteHallazgo> reportes;
-    /** Secuencia que diferencia los códigos de los reportes. */
+    /** Próximo número para asignar códigos únicos. */
     private int siguienteCodigo;
+    /** Explicación de la última operación rechazada. */
+    private String mensajeError;
 
-    /** Inicializa la colección en memoria. */
-    public GestorReportesHallazgo() { reportes = new ArrayList<ReporteHallazgo>(); siguienteCodigo = 1; }
+    /** Crea una colección vacía de reportes de hallazgo. */
+    public GestorReportesHallazgo() {
+        reportes = new ArrayList<ReporteHallazgo>();
+        siguienteCodigo = 1;
+        mensajeError = "";
+    }
 
-    /** Crea el aviso en PENDIENTE_RECEPCION; no crea ni almacena el objeto físico. */
+    /** Registra un hallazgo como pendiente de recepción sin crear aún el objeto físico. */
     public ReporteHallazgo registrar(Usuario reportante, String categoria, String marca, String color,
                                      String descripcion, String caracteristicas, LocalDateTime fecha,
                                      String lugar, String fotografia) {
-        if (reportante == null) throw new IllegalArgumentException("Debe iniciar sesión para registrar un hallazgo.");
-        validar(categoria, color, descripcion, fecha, lugar);
-        ReporteHallazgo reporte = new ReporteHallazgo("HAL-" + siguienteCodigo++, reportante, categoria.trim(),
-                limpiarOpcional(marca), color.trim(), descripcion.trim(), limpiarOpcional(caracteristicas),
-                fecha, lugar.trim(), limpiarOpcional(fotografia), "PENDIENTE_RECEPCION");
+        mensajeError = validar(reportante, categoria, color, descripcion, fecha, lugar);
+        if (!mensajeError.isEmpty()) return null;
+        ReporteHallazgo reporte = new ReporteHallazgo("HAL-" + siguienteCodigo, reportante,
+                categoria.trim(), limpiarOpcional(marca), color.trim(), descripcion.trim(),
+                limpiarOpcional(caracteristicas), fecha, lugar.trim(), limpiarOpcional(fotografia), "PENDIENTE_RECEPCION");
+        siguienteCodigo++;
         reportes.add(reporte);
         reportante.agregarReporteHallazgo(reporte);
         return reporte;
     }
 
-    /** Edita un aviso propio mientras no se haya asociado a una recepción física. */
-    public void editar(String codigo, Usuario reportante, String categoria, String marca, String color,
-                       String descripcion, String caracteristicas, LocalDateTime fecha, String lugar, String fotografia) {
+    /** Edita un hallazgo propio solo si el objeto todavía no fue recibido físicamente. */
+    public boolean editar(String codigo, Usuario reportante, String categoria, String marca, String color,
+                          String descripcion, String caracteristicas, LocalDateTime fecha,
+                          String lugar, String fotografia) {
         ReporteHallazgo reporte = buscarPorCodigo(codigo);
-        if (reporte == null) throw new IllegalArgumentException("No existe el reporte indicado.");
-        if (reporte.getUsuarioReportante() != reportante) throw new IllegalArgumentException("Solo quien registró el hallazgo puede editarlo.");
-        if (reporte.getObjetoEncontrado() != null) throw new IllegalArgumentException("El objeto ya fue recibido; sus datos de identificación no se pueden editar.");
-        validar(categoria, color, descripcion, fecha, lugar);
-        reporte.setCategoria(categoria.trim()); reporte.setMarca(limpiarOpcional(marca)); reporte.setColor(color.trim());
-        reporte.setDescripcion(descripcion.trim()); reporte.setCaracteristicas(limpiarOpcional(caracteristicas));
-        reporte.setFechaHallazgo(fecha); reporte.setLugar(lugar.trim()); reporte.setFotografia(limpiarOpcional(fotografia));
+        mensajeError = "";
+        if (reporte == null) mensajeError = "No existe el reporte indicado.";
+        else if (reporte.getUsuarioReportante() != reportante) mensajeError = "El reporte no pertenece a esta cuenta.";
+        else if (reporte.getObjetoEncontrado() != null) mensajeError = "El objeto ya fue recibido; sus datos no se pueden editar.";
+        else mensajeError = validar(reportante, categoria, color, descripcion, fecha, lugar);
+        if (!mensajeError.isEmpty()) return false;
+        reporte.setCategoria(categoria.trim());
+        reporte.setMarca(limpiarOpcional(marca));
+        reporte.setColor(color.trim());
+        reporte.setDescripcion(descripcion.trim());
+        reporte.setCaracteristicas(limpiarOpcional(caracteristicas));
+        reporte.setFechaHoraHallazgo(fecha);
+        reporte.setLugarHallazgo(lugar.trim());
+        reporte.setFotografia(limpiarOpcional(fotografia));
+        return true;
     }
 
-    /** Busca un aviso de hallazgo por su código. */
+    /** Busca un reporte por código o devuelve null si no se encuentra. */
     public ReporteHallazgo buscarPorCodigo(String codigo) {
         if (codigo == null) return null;
-        for (ReporteHallazgo reporte : reportes) if (reporte.getCodigo().equalsIgnoreCase(codigo.trim())) return reporte;
+        for (ReporteHallazgo reporte : reportes) {
+            if (reporte.getCodigo().equalsIgnoreCase(codigo.trim())) return reporte;
+        }
         return null;
     }
-    /** Comprueba los campos requeridos y rechaza fechas posteriores al momento actual. */
-    private void validar(String categoria, String color, String descripcion, LocalDateTime fecha, String lugar) {
-        obligatorio(categoria, "La categoría es obligatoria."); obligatorio(color, "El color es obligatorio.");
-        obligatorio(descripcion, "La descripción es obligatoria."); obligatorio(lugar, "El lugar es obligatorio.");
-        if (fecha == null) throw new IllegalArgumentException("La fecha del hallazgo es obligatoria.");
-        if (fecha.isAfter(LocalDateTime.now())) throw new IllegalArgumentException("La fecha del hallazgo no puede estar en el futuro.");
+
+    /** Valida el reportante, los textos requeridos y la fecha del hallazgo. */
+    private String validar(Usuario reportante, String categoria, String color, String descripcion,
+                           LocalDateTime fecha, String lugar) {
+        if (reportante == null) return "Debe iniciar sesión para registrar un hallazgo.";
+        if (vacio(categoria)) return "La categoría es obligatoria.";
+        if (vacio(color)) return "El color es obligatorio.";
+        if (vacio(descripcion)) return "La descripción es obligatoria.";
+        if (vacio(lugar)) return "El lugar donde se encontró es obligatorio.";
+        if (fecha == null) return "La fecha del hallazgo es obligatoria.";
+        if (fecha.isAfter(LocalDateTime.now())) return "La fecha del hallazgo no puede estar en el futuro.";
+        return "";
     }
-    /** Comprueba que un dato requerido tenga contenido. */
-    private void obligatorio(String valor, String mensaje) { if (valor == null || valor.trim().isEmpty()) throw new IllegalArgumentException(mensaje); }
-    /** Convierte los campos opcionales nulos en texto vacío. */
-    private String limpiarOpcional(String valor) { return valor == null ? "" : valor.trim(); }
-    public ArrayList<ReporteHallazgo> getReportes() { return reportes; }
+
+    /** Comprueba si falta un dato de texto obligatorio. */
+    private boolean vacio(String texto) { return texto == null || texto.trim().isEmpty(); }
+    /** Convierte un campo opcional nulo en texto vacío. */
+    private String limpiarOpcional(String texto) { return texto == null ? "" : texto.trim(); }
+    /** Devuelve el mensaje de la última operación rechazada. */
+    public String getMensajeError() { return mensajeError; }
+    /** Devuelve todos los avisos de hallazgo de la sesión. */
+    /** Devuelve una copia de la lista de hallazgos conservando las mismas entidades. */
+    public ArrayList<ReporteHallazgo> getReportes() { return new ArrayList<ReporteHallazgo>(reportes); }
 }

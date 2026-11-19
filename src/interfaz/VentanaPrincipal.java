@@ -1,27 +1,26 @@
 package interfaz;
 
+import modelo.Usuario;
 import negocio.GestorCoincidencias;
 import negocio.GestorCustodia;
 import negocio.GestorReportesHallazgo;
 import negocio.GestorReportesPerdida;
 import negocio.GestorUsuarios;
-import modelo.Usuario;
-import javax.swing.JOptionPane;
 
-/** Mantiene las instancias compartidas de negocio y presenta el menú inicial. */
+/** Crea los gestores compartidos y controla el menú inicial de Reencuentra. */
 public class VentanaPrincipal {
-    /** Gestor compartido que conserva las cuentas durante la sesión. */
+    /** Gestor único de cuentas para toda la ejecución. */
     private GestorUsuarios gestorUsuarios;
-    /** Gestor compartido que conserva reportes de pérdida. */
+    /** Gestor único de pérdidas para toda la ejecución. */
     private GestorReportesPerdida gestorPerdidas;
-    /** Gestor compartido que conserva reportes de hallazgo. */
+    /** Gestor único de hallazgos para toda la ejecución. */
     private GestorReportesHallazgo gestorHallazgos;
-    /** Gestor compartido que calcula coincidencias entre los reportes. */
+    /** Gestor único de coincidencias para toda la ejecución. */
     private GestorCoincidencias gestorCoincidencias;
-    /** Gestor compartido que conserva objetos y movimientos de custodia. */
+    /** Gestor único de ubicaciones, objetos y movimientos para toda la ejecución. */
     private GestorCustodia gestorCustodia;
 
-    /** Construye la aplicación y conecta las interfaces con sus gestores compartidos. */
+    /** Inicializa una sola instancia de cada gestor para compartir las colecciones. */
     public VentanaPrincipal() {
         gestorUsuarios = new GestorUsuarios();
         gestorPerdidas = new GestorReportesPerdida();
@@ -30,27 +29,43 @@ public class VentanaPrincipal {
         gestorCustodia = new GestorCustodia();
     }
 
-    /** Repite registro e inicio de sesión hasta que la persona elija salir. */
+    /** Muestra y repite el menú inicial hasta que la persona elija salir. */
     public void iniciar() {
         InterfazUsuarios interfazUsuarios = new InterfazUsuarios(gestorUsuarios);
-        while (true) {
-            String[] opciones = {"Registrarse", "Iniciar sesión", "Salir"};
-            int opcion = JOptionPane.showOptionDialog(null, "Bienvenido a Reencuentra", "Reencuentra",
-                    JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, opciones, opciones[0]);
-            if (opcion == 0) interfazUsuarios.registrar();
-            else if (opcion == 1) {
-                Usuario usuario = interfazUsuarios.iniciarSesion();
-                if (usuario != null) abrirMenu(usuario);
-            } else return;
-        }
+        int opcion;
+        do {
+            System.out.println("\n====== REENCUENTRA ======");
+            System.out.println("1. Registrarse");
+            System.out.println("2. Iniciar sesión");
+            System.out.println("3. Salir");
+            opcion = Validacion.leerOpcion("Seleccione una opción: ", 1, 3);
+            switch (opcion) {
+                case 1:
+                    interfazUsuarios.registrar();
+                    break;
+                case 2:
+                    Usuario usuario = interfazUsuarios.iniciarSesion();
+                    if (usuario != null) abrirMenu(usuario);
+                    break;
+                case 3:
+                    System.out.println("Gracias por utilizar Reencuentra.");
+                    break;
+                default:
+                    System.out.println("Opción no válida.");
+            }
+        } while (opcion != 3);
     }
 
-    /** Dirige a cada persona al menú permitido por su rol. */
+    /** Dirige a la cuenta autenticada al menú permitido por su rol. */
     private void abrirMenu(Usuario usuario) {
-        if ("ENCARGADO".equals(usuario.getRol())) {
-            new MenuEncargado(usuario, gestorHallazgos, gestorCustodia, gestorPerdidas, gestorCoincidencias).mostrar();
+        if (usuario.getRol().equals("ENCARGADO")) {
+            MenuEncargado menu = new MenuEncargado(usuario, gestorHallazgos, gestorCustodia,
+                    gestorPerdidas, gestorCoincidencias);
+            menu.mostrar();
         } else {
-            new MenuUsuario(usuario, gestorUsuarios, gestorPerdidas, gestorHallazgos, gestorCoincidencias).mostrar();
+            MenuUsuario menu = new MenuUsuario(usuario, gestorUsuarios, gestorPerdidas,
+                    gestorHallazgos, gestorCoincidencias);
+            menu.mostrar();
         }
     }
 }

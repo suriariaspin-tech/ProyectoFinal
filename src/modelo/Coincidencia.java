@@ -18,14 +18,24 @@ public class Coincidencia {
         this.puntaje = puntaje;
         this.criteriosCoincidentes = criteriosCoincidentes;
     }
+    /** Devuelve el código único del resultado. */
     public String getCodigoCoincidencia() { return codigoCoincidencia; }
+    /** Actualiza el código del resultado. */
     public void setCodigoCoincidencia(String codigoCoincidencia) { this.codigoCoincidencia = codigoCoincidencia; }
+    /** Devuelve el reporte de pérdida comparado. */
     public ReportePerdida getReportePerdida() { return reportePerdida; }
+    /** Actualiza el reporte de pérdida asociado. */
     public void setReportePerdida(ReportePerdida reportePerdida) { this.reportePerdida = reportePerdida; }
+    /** Devuelve el reporte de hallazgo comparado. */
     public ReporteHallazgo getReporteHallazgo() { return reporteHallazgo; }
+    /** Actualiza el reporte de hallazgo asociado. */
     public void setReporteHallazgo(ReporteHallazgo reporteHallazgo) { this.reporteHallazgo = reporteHallazgo; }
+    /** Devuelve el puntaje de similitud calculado. */
     public double getPuntaje() { return puntaje; }
+    /** Actualiza el puntaje de similitud. */
     public void setPuntaje(double puntaje) { this.puntaje = puntaje; }
+    /** Devuelve los criterios que aportaron puntos. */
     public String getCriteriosCoincidentes() { return criteriosCoincidentes; }
+    /** Actualiza el resumen de criterios coincidentes. */
     public void setCriteriosCoincidentes(String criteriosCoincidentes) { this.criteriosCoincidentes = criteriosCoincidentes; }
 }

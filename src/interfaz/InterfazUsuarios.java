@@ -2,54 +2,51 @@ package interfaz;
 
 import modelo.Usuario;
 import negocio.GestorUsuarios;
-import javax.swing.JOptionPane;
 
-/** Solicita datos de cuenta y presenta perfiles usando cuadros de diálogo. */
+/** Atiende por consola el registro, el inicio de sesión y el perfil de las personas. */
 public class InterfazUsuarios {
-    /** Gestor que valida y conserva las cuentas. */
+    /** Gestor compartido que verifica y conserva las cuentas. */
     private GestorUsuarios gestor;
 
-    /** Recibe el gestor compartido de usuarios. */
+    /** Recibe el gestor de usuarios que se conserva durante toda la ejecución. */
     public InterfazUsuarios(GestorUsuarios gestor) { this.gestor = gestor; }
 
-    /** Pide los campos necesarios para el registro público de un miembro. */
+    /** Lee los datos de registro y crea un usuario MIEMBRO si todos son válidos. */
     public void registrar() {
-        try {
-            String nombres = pedir("Nombres y apellidos:"); if (nombres == null) return;
-            String identificador = pedir("ID Banner:"); if (identificador == null) return;
-            String correo = pedir("Correo electrónico:"); if (correo == null) return;
-            String telefono = pedir("Número de contacto:"); if (telefono == null) return;
-            String contrasena = pedir("Contraseña (mínimo 8 caracteres):"); if (contrasena == null) return;
-            Usuario usuario = gestor.registrarUsuario(nombres, identificador, correo, telefono, contrasena);
-            JOptionPane.showMessageDialog(null, "Registro completo. Su código es " + usuario.getCodigo() + ".");
-        } catch (IllegalArgumentException error) { mostrarError(error); }
+        System.out.println("\n--- Registro de miembro ---");
+        String nombre = Validacion.leerTextoObligatorio("Nombre completo: ");
+        String idBanner = Validacion.leerTextoObligatorio("ID Banner: ");
+        String correo = Validacion.leerTextoObligatorio("Correo electrónico: ");
+        String telefono = Validacion.leerTextoObligatorio("Teléfono: ");
+        String contrasena = Validacion.leerTextoObligatorio("Contraseña (mínimo 8 caracteres): ");
+        Usuario usuario = gestor.registrarUsuario(nombre, idBanner, correo, telefono, contrasena);
+        if (usuario == null) System.out.println("No se pudo registrar: " + gestor.getMensajeError());
+        else System.out.println("Registro completo. Código de usuario: " + usuario.getIdUsuario() + ". Rol: MIEMBRO.");
     }
 
-    /** Solicita credenciales y devuelve la cuenta autenticada o null. */
+    /** Lee las credenciales e inicia sesión o devuelve null si no son válidas. */
     public Usuario iniciarSesion() {
-        String correo = pedir("Correo electrónico:"); if (correo == null) return null;
-        String contrasena = pedir("Contraseña:"); if (contrasena == null) return null;
+        System.out.println("\n--- Inicio de sesión ---");
+        String correo = Validacion.leerTextoObligatorio("Correo electrónico: ");
+        String contrasena = Validacion.leerTextoObligatorio("Contraseña: ");
         Usuario usuario = gestor.iniciarSesion(correo, contrasena);
-        if (usuario == null) JOptionPane.showMessageDialog(null, "Correo, contraseña o estado de cuenta no válido.", "Acceso denegado", JOptionPane.ERROR_MESSAGE);
+        if (usuario == null) System.out.println("Correo, contraseña o estado de cuenta no válido.");
         return usuario;
     }
 
-    /** Muestra el perfil y ofrece editar únicamente los campos permitidos. */
+    /** Muestra el perfil y ofrece editar nombre, correo y teléfono sin cambiar ID Banner ni rol. */
     public void consultarYEditar(Usuario usuario) {
-        JOptionPane.showMessageDialog(null, usuario.toString(), "Mi perfil", JOptionPane.INFORMATION_MESSAGE);
-        int editar = JOptionPane.showConfirmDialog(null, "¿Desea editar nombres, correo y contacto?", "Editar perfil", JOptionPane.YES_NO_OPTION);
-        if (editar != JOptionPane.YES_OPTION) return;
-        try {
-            String nombres = pedir("Nombres y apellidos:"); if (nombres == null) return;
-            String correo = pedir("Correo electrónico:"); if (correo == null) return;
-            String telefono = pedir("Número de contacto:"); if (telefono == null) return;
-            gestor.editarPerfil(usuario, nombres, correo, telefono);
-            JOptionPane.showMessageDialog(null, "Perfil actualizado. El identificador y el rol no se modificaron.");
-        } catch (IllegalArgumentException error) { mostrarError(error); }
+        System.out.println("\n--- Mi perfil ---");
+        System.out.println(usuario);
+        int opcion = Validacion.leerOpcion("¿Editar nombre, correo y teléfono? 1. Sí  2. No: ", 1, 2);
+        if (opcion == 2) return;
+        String nombre = Validacion.leerTextoObligatorio("Nombre completo: ");
+        String correo = Validacion.leerTextoObligatorio("Correo electrónico: ");
+        String telefono = Validacion.leerTextoObligatorio("Teléfono: ");
+        if (gestor.editarPerfil(usuario, nombre, correo, telefono)) {
+            System.out.println("Perfil actualizado. El ID Banner y el rol no se modificaron.");
+        } else {
+            System.out.println("No se pudo actualizar el perfil: " + gestor.getMensajeError());
+        }
     }
-
-    /** Solicita un dato textual o devuelve null si se cancela el cuadro. */
-    private String pedir(String mensaje) { return JOptionPane.showInputDialog(null, mensaje); }
-    /** Presenta al usuario el motivo de una validación rechazada. */
-    private void mostrarError(Exception error) { JOptionPane.showMessageDialog(null, error.getMessage(), "No se pudo completar", JOptionPane.ERROR_MESSAGE); }
 }

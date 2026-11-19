@@ -1,41 +1,49 @@
 package interfaz;
 
 import modelo.Usuario;
-import negocio.GestorCustodia;
 import negocio.GestorCoincidencias;
+import negocio.GestorCustodia;
 import negocio.GestorReportesHallazgo;
 import negocio.GestorReportesPerdida;
-import javax.swing.JOptionPane;
 
-/** Muestra las operaciones administrativas disponibles para un encargado autorizado. */
+/** Presenta las operaciones administrativas disponibles para un encargado activo. */
 public class MenuEncargado {
-    /** Encargado autenticado y responsable de las operaciones. */
+    /** Encargado autenticado y responsable de las operaciones de custodia. */
     private Usuario encargado;
-    /** Interfaz administrativa para recepción, ubicaciones y traslados. */
+    /** Interfaces de consola conectadas a los gestores compartidos. */
     private InterfazCustodia interfazCustodia;
-    /** Interfaz que permite consultar los reportes registrados. */
     private InterfazReportes interfazReportes;
 
-    /** Recibe el usuario y los gestores compartidos por la ventana principal. */
-    public MenuEncargado(Usuario encargado, GestorReportesHallazgo hallazgos, GestorCustodia custodia,
-                         GestorReportesPerdida perdidas, GestorCoincidencias coincidencias) {
-        this.encargado = encargado; interfazCustodia = new InterfazCustodia(custodia, hallazgos);
+    /** Recibe el encargado y los gestores de la misma sesión de aplicación. */
+    public MenuEncargado(Usuario encargado, GestorReportesHallazgo hallazgos,
+                         GestorCustodia custodia, GestorReportesPerdida perdidas,
+                         GestorCoincidencias coincidencias) {
+        this.encargado = encargado;
+        interfazCustodia = new InterfazCustodia(custodia, hallazgos);
         interfazReportes = new InterfazReportes(perdidas, hallazgos, coincidencias);
     }
 
-    /** Repite el menú administrativo hasta cerrar la sesión. */
+    /** Repite el menú del encargado hasta que cierre su sesión. */
     public void mostrar() {
-        String[] opciones = {"Registrar recepción física", "Consultar disponibilidad de ubicaciones", "Trasladar un objeto",
-                "Consultar ubicación e historial", "Consultar reportes registrados", "Cerrar sesión"};
-        while (true) {
-            int opcion = JOptionPane.showOptionDialog(null, "Sesión de encargado: " + encargado.getNombres(), "Menú de encargado",
-                    JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, opciones, opciones[0]);
-            if (opcion == 0) interfazCustodia.registrarRecepcion(encargado);
-            else if (opcion == 1) interfazCustodia.consultarDisponibilidad();
-            else if (opcion == 2) interfazCustodia.trasladar(encargado);
-            else if (opcion == 3) interfazCustodia.consultarUbicacionEHistorial();
-            else if (opcion == 4) interfazReportes.consultarTodos();
-            else return;
-        }
+        int opcion;
+        do {
+            System.out.println("\n=== Menú de encargado: " + encargado.getNombreCompleto() + " ===");
+            System.out.println("1. Registrar recepción física de un objeto");
+            System.out.println("2. Consultar disponibilidad de ubicaciones");
+            System.out.println("3. Trasladar un objeto");
+            System.out.println("4. Consultar ubicación e historial de movimientos");
+            System.out.println("5. Consultar reportes registrados");
+            System.out.println("6. Cerrar sesión");
+            opcion = Validacion.leerOpcion("Seleccione una opción: ", 1, 6);
+            switch (opcion) {
+                case 1: interfazCustodia.registrarRecepcion(encargado); break;
+                case 2: interfazCustodia.consultarDisponibilidad(); break;
+                case 3: interfazCustodia.trasladar(encargado); break;
+                case 4: interfazCustodia.consultarUbicacionEHistorial(); break;
+                case 5: interfazReportes.consultarTodos(); break;
+                case 6: System.out.println("Sesión de encargado cerrada."); break;
+                default: System.out.println("Opción no válida.");
+            }
+        } while (opcion != 6);
     }
 }

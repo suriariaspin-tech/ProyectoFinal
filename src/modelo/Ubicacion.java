@@ -21,9 +21,12 @@ public class Ubicacion {
 
     /** Crea una ubicación vacía con su capacidad y categorías permitidas. */
     public Ubicacion(String codigo, String nombre, int capacidadMaxima, ArrayList<String> categoriasAdmitidas) {
-        this.codigoUbicacion = codigo; this.nombre = nombre; this.capacidadMaxima = capacidadMaxima;
+        this.codigoUbicacion = codigo; this.nombre = nombre;
+        this.capacidadMaxima = capacidadMaxima > 0 ? capacidadMaxima : 1;
         this.ocupacionActual = 0;
-        this.categoriasAdmitidas = categoriasAdmitidas; this.habilitada = true;
+        this.categoriasAdmitidas = categoriasAdmitidas == null
+                ? new ArrayList<String>() : new ArrayList<String>(categoriasAdmitidas);
+        this.habilitada = true;
         this.objetos = new ArrayList<ObjetoEncontrado>();
     }
 
@@ -43,49 +46,62 @@ public class Ubicacion {
     }
 
     /** Registra la entrada física de un objeto después de verificar capacidad y categoría. */
-    public void registrarEntrada(ObjetoEncontrado objeto) {
-        validarEntrada(objeto);
+    public boolean registrarEntrada(ObjetoEncontrado objeto) {
+        if (!validarEntrada(objeto)) return false;
+        // No se agrega el objeto a dos ubicaciones si todavía apunta a otra ubicación física.
+        if (objeto.getUbicacionActual() != null && objeto.getUbicacionActual() != this) return false;
         objetos.add(objeto);
         ocupacionActual++;
+        return true;
     }
 
     /** Comprueba una entrada sin cambiar ocupación ni colecciones. */
-    public void validarEntrada(ObjetoEncontrado objeto) {
-        if (objeto == null) throw new IllegalArgumentException("El objeto es obligatorio.");
-        if (!tieneEspacio()) throw new IllegalStateException("La ubicación alcanzó su capacidad máxima.");
-        if (!admiteCategoria(objeto.getReporteHallazgo().getCategoria()))
-            throw new IllegalArgumentException("La ubicación no admite la categoría del objeto.");
-        if (objetos.contains(objeto)) throw new IllegalStateException("El objeto ya está registrado en esta ubicación.");
+    public boolean validarEntrada(ObjetoEncontrado objeto) {
+        if (objeto == null || objeto.getReporteHallazgo() == null) return false;
+        if (!habilitada) return false;
+        if (!tieneEspacio()) return false;
+        if (!admiteCategoria(objeto.getReporteHallazgo().getCategoria())) return false;
+        if (objetos.contains(objeto)) return false;
+        return true;
     }
 
     /** Registra la salida física del objeto sin modificar el historial de movimientos. */
-    public void registrarSalida(ObjetoEncontrado objeto) {
-        validarSalida(objeto);
+    public boolean registrarSalida(ObjetoEncontrado objeto) {
+        if (!validarSalida(objeto)) return false;
         objetos.remove(objeto);
         ocupacionActual--;
+        objeto.actualizarUbicacion(null);
+        return true;
     }
 
     /** Comprueba una salida sin cambiar ocupación ni colecciones. */
-    public void validarSalida(ObjetoEncontrado objeto) {
-        if (objeto == null || !objetos.contains(objeto))
-            throw new IllegalStateException("El objeto no está registrado en esta ubicación.");
+    public boolean validarSalida(ObjetoEncontrado objeto) {
+        return objeto != null && objetos.contains(objeto);
     }
 
+    /** Devuelve el código único de la ubicación. */
     public String getCodigoUbicacion() { return codigoUbicacion; }
+    /** Actualiza el código único de la ubicación. */
     public void setCodigoUbicacion(String codigoUbicacion) { this.codigoUbicacion = codigoUbicacion; }
-    /** Alias conservado para las interfaces y gestores existentes. */
-    public String getCodigo() { return codigoUbicacion; }
-    public void setCodigo(String codigo) { this.codigoUbicacion = codigo; }
+    /** Devuelve el nombre de la ubicación. */
     public String getNombre() { return nombre; }
+    /** Actualiza el nombre de la ubicación. */
     public void setNombre(String nombre) { this.nombre = nombre; }
+    /** Devuelve el máximo de objetos permitido. */
     public int getCapacidadMaxima() { return capacidadMaxima; }
+    /** Cambia la capacidad solo si no queda por debajo de la ocupación actual. */
     public void setCapacidadMaxima(int capacidadMaxima) {
-        if (capacidadMaxima < ocupacionActual) throw new IllegalArgumentException("La capacidad no puede ser menor que la ocupación actual.");
-        this.capacidadMaxima = capacidadMaxima;
+        if (capacidadMaxima >= ocupacionActual && capacidadMaxima > 0) this.capacidadMaxima = capacidadMaxima;
     }
-    public ArrayList<String> getCategoriasAdmitidas() { return categoriasAdmitidas; }
-    public void setCategoriasAdmitidas(ArrayList<String> categoriasAdmitidas) { this.categoriasAdmitidas = categoriasAdmitidas; }
+    /** Devuelve una copia de las categorías que acepta la ubicación. */
+    public ArrayList<String> getCategoriasAdmitidas() { return new ArrayList<String>(categoriasAdmitidas); }
+    /** Actualiza las categorías aceptadas usando una copia de la lista recibida. */
+    public void setCategoriasAdmitidas(ArrayList<String> categoriasAdmitidas) {
+        if (categoriasAdmitidas != null) this.categoriasAdmitidas = new ArrayList<String>(categoriasAdmitidas);
+    }
+    /** Devuelve si la ubicación está disponible para operaciones. */
     public boolean isHabilitada() { return habilitada; }
+    /** Cambia la disponibilidad de la ubicación. */
     public void setHabilitada(boolean habilitada) { this.habilitada = habilitada; }
     /** Devuelve una copia para impedir que se modifique la ocupación sin registrar una entrada o salida. */
     public ArrayList<ObjetoEncontrado> getObjetos() { return new ArrayList<ObjetoEncontrado>(objetos); }

@@ -6,43 +6,52 @@ import modelo.Usuario;
 import negocio.GestorCoincidencias;
 import negocio.GestorReportesHallazgo;
 import negocio.GestorReportesPerdida;
-import javax.swing.JOptionPane;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
-/** Actualiza y presenta posibles relaciones entre reportes, sin confirmar propiedad. */
+/** Calcula y muestra por consola posibles coincidencias sin confirmar propiedad. */
 public class InterfazCoincidencias {
-    /** Gestor que calcula los puntajes. */
+    /** Gestor compartido para comparar y ordenar reportes. */
     private GestorCoincidencias gestorCoincidencias;
-    /** Fuente de reportes de pérdida para recalcular resultados. */
+    /** Reportes de pérdida que se comparan. */
     private GestorReportesPerdida gestorPerdidas;
-    /** Fuente de reportes de hallazgo para recalcular resultados. */
+    /** Reportes de hallazgo que se comparan. */
     private GestorReportesHallazgo gestorHallazgos;
 
-    /** Recibe los tres gestores usados durante toda la sesión. */
-    public InterfazCoincidencias(GestorCoincidencias coincidencias, GestorReportesPerdida perdidas, GestorReportesHallazgo hallazgos) {
-        gestorCoincidencias = coincidencias; gestorPerdidas = perdidas; gestorHallazgos = hallazgos;
+    /** Recibe los tres gestores que comparten los datos de la ejecución. */
+    public InterfazCoincidencias(GestorCoincidencias coincidencias,
+                                 GestorReportesPerdida perdidas, GestorReportesHallazgo hallazgos) {
+        gestorCoincidencias = coincidencias;
+        gestorPerdidas = perdidas;
+        gestorHallazgos = hallazgos;
     }
 
-    /** Recalcula y muestra coincidencias propias con puntaje mínimo de 40. */
+    /** Recalcula y presenta coincidencias propias con puntaje mínimo de 40. */
     public void consultar(Usuario usuario) {
         gestorCoincidencias.recalcular(gestorPerdidas.getReportes(), gestorHallazgos.getReportes());
         ArrayList<Coincidencia> lista = gestorCoincidencias.consultarPorUsuario(usuario);
-        if (lista.isEmpty()) { JOptionPane.showMessageDialog(null, "No hay posibles coincidencias de 40 puntos o más."); return; }
-        StringBuilder texto = new StringBuilder("Las coincidencias son similitudes y no demuestran propiedad.\n\n");
-        DateTimeFormatter formato = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        if (lista.isEmpty()) {
+            System.out.println("No hay posibles coincidencias de 40 puntos o más.");
+            return;
+        }
+        System.out.println("Las coincidencias representan similitud y no demuestran propiedad.");
         for (Coincidencia coincidencia : lista) {
             ReporteHallazgo hallazgo = coincidencia.getReporteHallazgo();
-            texto.append("Hallazgo: ").append(hallazgo.getCodigo()).append(" | ").append(hallazgo.getCategoria())
-                    .append(" | ").append(hallazgo.getDescripcion()).append(" | Color: ").append(hallazgo.getColor())
-                    .append(" | Marca: ").append(hallazgo.getMarca().isEmpty() ? "No informada" : hallazgo.getMarca())
-                    .append(" | Fecha: ").append(hallazgo.getFechaHallazgo().format(formato)).append(" | Lugar: ").append(hallazgo.getLugar())
-                    .append(" | Puntaje: ").append((int) coincidencia.getPuntaje())
-                    .append(" | Estado de recepción: ").append(hallazgo.getEstadoRecepcion());
-            if (hallazgo.getObjetoEncontrado() != null) texto.append(" | Ubicación actual: ").append(hallazgo.getObjetoEncontrado().getUbicacionActual().getNombre());
-            else texto.append(" | Objeto todavía no recibido físicamente");
-            texto.append("\n\n");
+            System.out.println("Hallazgo: " + hallazgo.getCodigo() + " | " + hallazgo.getCategoria()
+                    + " | " + hallazgo.getDescripcion() + " | Color: " + hallazgo.getColor()
+                    + " | Marca: " + textoMarca(hallazgo.getMarca())
+                    + " | Fecha: " + hallazgo.getFechaHoraHallazgo()
+                    + " | Lugar: " + hallazgo.getLugarHallazgo()
+                    + " | Puntaje: " + (int) coincidencia.getPuntaje()
+                    + " | Criterios: " + coincidencia.getCriteriosCoincidentes());
+            if (hallazgo.getObjetoEncontrado() == null) {
+                System.out.println("Estado: PENDIENTE_RECEPCION; objeto aún no recibido físicamente.");
+            } else {
+                System.out.println("Estado: EN_CUSTODIA | Ubicación actual: "
+                        + hallazgo.getObjetoEncontrado().getUbicacionActual().getNombre());
+            }
         }
-        JOptionPane.showMessageDialog(null, texto.toString(), "Posibles coincidencias", JOptionPane.INFORMATION_MESSAGE);
     }
+
+    /** Indica que una marca vacía no fue informada. */
+    private String textoMarca(String marca) { return marca == null || marca.trim().isEmpty() ? "No informada" : marca; }
 }

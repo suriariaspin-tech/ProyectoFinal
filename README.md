@@ -4,7 +4,7 @@ Sistema de gestión y ubicación de objetos perdidos y encontrados en el campus 
 
 ## Requisitos y ejecución
 
-- Java 8 o superior, con soporte para Swing.
+- Java 8 o superior.
 - No se requieren bibliotecas externas ni base de datos.
 - En IntelliJ IDEA, abra el proyecto y ejecute `interfaz.Main` desde `src/interfaz/Main.java`.
 - Desde una terminal ubicada en la raíz, con el directorio `bin` del JDK agregado a `PATH`, puede compilar y ejecutar con:
@@ -14,7 +14,7 @@ javac -encoding UTF-8 -d out src\modelo\*.java src\negocio\*.java src\interfaz\*
 java -cp out interfaz.Main
 ```
 
-Los datos se guardan en memoria durante la ejecución y se pierden al cerrar el programa.
+Los datos se guardan en memoria durante la ejecución y se pierden al cerrar el programa. La aplicación se maneja por consola con `Scanner`.
 
 ## Cuenta de demostración
 
@@ -22,6 +22,8 @@ Los datos se guardan en memoria durante la ejecución y se pierden al cerrar el 
 - Contraseña: `Encargado123`
 
 Es una cuenta ficticia creada exclusivamente para pruebas. El registro público siempre crea cuentas `MIEMBRO`; los encargados no pueden autoasignarse ese rol.
+
+El registro pide el **ID Banner**. Debe ser único y no puede modificarse desde el perfil.
 
 ## Paquetes y estructura
 
@@ -37,6 +39,7 @@ ProyectoFinal/
     │   ├── Main.java
     │   ├── MenuEncargado.java
     │   ├── MenuUsuario.java
+    │   ├── Validacion.java
     │   └── VentanaPrincipal.java
     ├── modelo/
     │   ├── Coincidencia.java
@@ -61,11 +64,11 @@ ProyectoFinal/
 
 **negocio:** `GestorUsuarios` valida registro, inicio de sesión y perfil; `GestorReportesPerdida` administra las pérdidas; `GestorReportesHallazgo` administra avisos de hallazgo que permanecen pendientes hasta ser recibidos; `GestorCoincidencias` aplica las reglas de puntuación y ordenamiento; `GestorCustodia` administra ubicaciones, recepciones, capacidad y movimientos históricos.
 
-**interfaz:** `Main` inicia Swing; `VentanaPrincipal` conserva instancias compartidas de los gestores y dirige la navegación; `MenuUsuario` y `MenuEncargado` restringen opciones por rol; `InterfazUsuarios`, `InterfazReportes`, `InterfazCoincidencias` e `InterfazCustodia` solicitan y muestran información con `JOptionPane`.
+**interfaz:** `Main` inicia la aplicación; `VentanaPrincipal` conserva instancias compartidas de los gestores y dirige la navegación; `MenuUsuario` y `MenuEncargado` presentan menús de consola según el rol; `InterfazUsuarios`, `InterfazReportes`, `InterfazCoincidencias` e `InterfazCustodia` manejan las operaciones de cada módulo; `Validacion` comparte un único `Scanner`, valida textos, números, opciones y fechas.
 
 ## Módulos implementados
 
-1. **Usuarios:** registro de miembros, validación de correo e identificador únicos, contraseña mínima de ocho caracteres, inicio de sesión y consulta/edición limitada de perfil.
+1. **Usuarios:** registro de miembros, validación de correo e ID Banner únicos, contraseña mínima de ocho caracteres, inicio de sesión y consulta/edición limitada de perfil.
 2. **Reportes:** creación independiente de pérdidas abiertas y hallazgos pendientes de recepción; validación de datos y fechas; edición del reporte propio según su estado.
 3. **Coincidencias:** comparación por categoría y cronología; suma de marca (40), color (40) y lugar (20); consulta de resultados de 40 puntos o más en orden descendente. Un puntaje no confirma propiedad.
 4. **Recepción y custodia:** recepción física por encargado en Garita, Biblioteca o Recepción, consulta de capacidad y categorías, traslado validado y conservación de historial.
@@ -78,4 +81,5 @@ ProyectoFinal/
 - Las categorías iniciales admitidas son Accesorios, Electrónica, Ropa, Documentos y Otros.
 - La fotografía es opcional y se almacena como una referencia/ruta de texto; no se carga ni almacena el archivo de imagen. El diagrama UML no muestra ese atributo, por lo que se conserva como dato opcional común en `Reporte` para cumplir el requisito funcional previo.
 - El historial registra los traslados entre ubicaciones; la recepción inicial establece la ubicación actual, pero no se registra como traslado porque no tiene una ubicación de origen del campus.
+- Las fechas se ingresan en formato `AAAA-MM-DD HH:MM`, por ejemplo `2026-03-15 14:30`; las fechas futuras se rechazan.
 - No se implementa el módulo de reclamos, verificación de propiedad ni devolución.

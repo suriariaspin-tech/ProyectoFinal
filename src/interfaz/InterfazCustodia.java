@@ -6,77 +6,89 @@ import modelo.Ubicacion;
 import modelo.Usuario;
 import negocio.GestorCustodia;
 import negocio.GestorReportesHallazgo;
-import javax.swing.JOptionPane;
-import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 
-/** Presenta las operaciones administrativas sobre recepción, ubicaciones y traslados. */
+/** Lee y presenta las operaciones de recepción y custodia en la consola. */
 public class InterfazCustodia {
-    /** Gestor compartido que aplica las reglas de custodia. */
+    /** Gestor compartido que mantiene ubicaciones, objetos e historial. */
     private GestorCustodia gestorCustodia;
-    /** Gestor compartido de avisos de hallazgo pendientes. */
+    /** Gestor compartido que contiene los reportes pendientes de recepción. */
     private GestorReportesHallazgo gestorHallazgos;
 
-    /** Recibe los gestores utilizados también por los demás módulos. */
-    public InterfazCustodia(GestorCustodia gestorCustodia, GestorReportesHallazgo gestorHallazgos) {
-        this.gestorCustodia = gestorCustodia; this.gestorHallazgos = gestorHallazgos;
+    /** Recibe los gestores de custodia y hallazgos de la misma sesión. */
+    public InterfazCustodia(GestorCustodia custodia, GestorReportesHallazgo hallazgos) {
+        gestorCustodia = custodia;
+        gestorHallazgos = hallazgos;
     }
 
-    /** Solicita el código de un hallazgo y la ubicación física elegida. */
+    /** Recibe físicamente un reporte pendiente en la ubicación que seleccionó el encargado. */
     public void registrarRecepcion(Usuario encargado) {
-        String codigo = pedir("Código del reporte de hallazgo:"); if (codigo == null) return;
-        String ubicacion = elegirUbicacion("Ubicación donde quedará el objeto:"); if (ubicacion == null) return;
-        try {
-            ObjetoEncontrado objeto = gestorCustodia.registrarRecepcion(codigo, ubicacion, encargado, gestorHallazgos);
-            JOptionPane.showMessageDialog(null, "Recepción confirmada. " + objeto.getCodigo() + " está EN_CUSTODIA en " + ubicacion + ".");
-        } catch (IllegalArgumentException error) { mostrarError(error); }
+        System.out.println("\n--- Recepción física ---");
+        String codigo = Validacion.leerTextoObligatorio("Código del reporte de hallazgo: ");
+        mostrarUbicaciones();
+        String ubicacion = elegirUbicacion();
+        ObjetoEncontrado objeto = gestorCustodia.registrarRecepcion(codigo, ubicacion, encargado, gestorHallazgos);
+        if (objeto == null) System.out.println("No se pudo registrar la recepción: " + gestorCustodia.getMensajeError());
+        else System.out.println("Recepción confirmada. " + objeto.getCodigoObjeto() + " está EN_CUSTODIA en " + ubicacion + ".");
     }
 
-    /** Muestra capacidad, ocupación, espacios, categorías y disponibilidad por ubicación. */
+    /** Muestra ocupación, espacios, categorías y estado de cada ubicación. */
     public void consultarDisponibilidad() {
-        StringBuilder texto = new StringBuilder();
+        mostrarUbicaciones();
         for (Ubicacion ubicacion : gestorCustodia.getUbicaciones()) {
-            texto.append(ubicacion.getNombre()).append(" | Capacidad: ").append(ubicacion.getCapacidadMaxima())
-                    .append(" | Ocupación: ").append(ubicacion.getOcupacionActual()).append(" | Espacios: ")
-                    .append(ubicacion.getEspaciosDisponibles()).append(" | Categorías: ").append(ubicacion.getCategoriasAdmitidas())
-                    .append(" | Estado: ").append(ubicacion.isHabilitada() ? "HABILITADA" : "INHABILITADA").append("\n");
+            System.out.println(ubicacion.getNombre() + " | Capacidad: " + ubicacion.getCapacidadMaxima()
+                    + " | Ocupación: " + ubicacion.getOcupacionActual()
+                    + " | Espacios disponibles: " + ubicacion.getEspaciosDisponibles()
+                    + " | Categorías: " + ubicacion.getCategoriasAdmitidas()
+                    + " | Estado: " + (ubicacion.isHabilitada() ? "HABILITADA" : "INHABILITADA"));
         }
-        JOptionPane.showMessageDialog(null, texto.toString(), "Disponibilidad de ubicaciones", JOptionPane.INFORMATION_MESSAGE);
     }
 
-    /** Solicita datos y realiza el traslado mediante el gestor, que valida antes de cambiar listas. */
+    /** Traslada un objeto bajo custodia después de pedir destino y motivo. */
     public void trasladar(Usuario encargado) {
-        String codigo = pedir("Código del objeto (código HAL):"); if (codigo == null) return;
-        String destino = elegirUbicacion("Seleccione la nueva ubicación:"); if (destino == null) return;
-        String motivo = pedir("Motivo obligatorio del traslado:"); if (motivo == null) return;
-        try { gestorCustodia.trasladar(codigo, destino, motivo, encargado); JOptionPane.showMessageDialog(null, "Traslado registrado."); }
-        catch (IllegalArgumentException error) { mostrarError(error); }
-    }
-
-    /** Presenta ubicación actual e historial administrativo de un objeto recibido. */
-    public void consultarUbicacionEHistorial() {
-        String codigo = pedir("Código del objeto (código HAL):"); if (codigo == null) return;
-        ObjetoEncontrado objeto = gestorCustodia.buscarObjeto(codigo);
-        if (objeto == null) { JOptionPane.showMessageDialog(null, "No se encontró un objeto recibido con ese código."); return; }
-        StringBuilder texto = new StringBuilder("Objeto: ").append(objeto.getCodigo()).append(" | Estado: ")
-                .append(objeto.getEstadoCustodia()).append(" | Ubicación: ").append(objeto.getUbicacionActual().getNombre()).append("\n\nHistorial:\n");
-        DateTimeFormatter formato = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        for (MovimientoCustodia movimiento : gestorCustodia.consultarHistorial(codigo)) {
-            texto.append(movimiento.getUbicacionOrigen() == null ? "ORIGEN EXTERNO" : movimiento.getUbicacionOrigen().getNombre())
-                    .append(" -> ").append(movimiento.getUbicacionDestino().getNombre()).append(" | ")
-                    .append(movimiento.getFechaHora().format(formato)).append(" | Motivo: ").append(movimiento.getMotivo())
-                    .append(" | Encargado: ").append(movimiento.getEncargado().getNombres()).append("\n");
+        System.out.println("\n--- Trasladar objeto ---");
+        String codigo = Validacion.leerTextoObligatorio("Código del objeto: ");
+        mostrarUbicaciones();
+        String destino = elegirUbicacion();
+        String motivo = Validacion.leerTextoObligatorio("Motivo del traslado: ");
+        if (gestorCustodia.trasladar(codigo, destino, motivo, encargado)) {
+            System.out.println("Traslado registrado correctamente.");
+        } else {
+            System.out.println("No se pudo realizar el traslado: " + gestorCustodia.getMensajeError());
         }
-        JOptionPane.showMessageDialog(null, texto.toString(), "Ubicación e historial", JOptionPane.INFORMATION_MESSAGE);
     }
 
-    /** Presenta únicamente las tres ubicaciones físicas configuradas. */
-    private String elegirUbicacion(String mensaje) {
-        String[] opciones = {"GARITA", "BIBLIOTECA", "RECEPCION"};
-        Object seleccion = JOptionPane.showInputDialog(null, mensaje, "Seleccionar ubicación", JOptionPane.QUESTION_MESSAGE, null, opciones, opciones[0]);
-        return seleccion == null ? null : seleccion.toString();
+    /** Muestra la ubicación actual y todos los traslados históricos del objeto. */
+    public void consultarUbicacionEHistorial() {
+        String codigo = Validacion.leerTextoObligatorio("Código del objeto: ");
+        ObjetoEncontrado objeto = gestorCustodia.buscarObjeto(codigo);
+        if (objeto == null) {
+            System.out.println("No se encontró un objeto recibido con ese código.");
+            return;
+        }
+        System.out.println("Objeto: " + objeto.getCodigoObjeto() + " | Estado: " + objeto.getEstadoCustodia()
+                + " | Ubicación actual: " + objeto.getUbicacionActual().getNombre());
+        ArrayList<MovimientoCustodia> historial = gestorCustodia.consultarHistorial(codigo);
+        if (historial.isEmpty()) System.out.println("El objeto aún no tiene traslados.");
+        for (MovimientoCustodia movimiento : historial) {
+            System.out.println(movimiento.getCodigoMovimiento() + " | " + movimiento.getUbicacionOrigen().getNombre()
+                    + " -> " + movimiento.getUbicacionDestino().getNombre()
+                    + " | Fecha: " + movimiento.getFechaHora()
+                    + " | Motivo: " + movimiento.getMotivo()
+                    + " | Encargado: " + movimiento.getEncargado().getNombreCompleto());
+        }
     }
-    /** Solicita texto y permite cancelar sin ejecutar una operación. */
-    private String pedir(String mensaje) { return JOptionPane.showInputDialog(null, mensaje); }
-    /** Informa una validación fallida sin ocultar el motivo. */
-    private void mostrarError(Exception error) { JOptionPane.showMessageDialog(null, error.getMessage(), "No se pudo completar", JOptionPane.ERROR_MESSAGE); }
+
+    /** Imprime las ubicaciones existentes antes de solicitar el nombre de una. */
+    private void mostrarUbicaciones() {
+        System.out.println("Ubicaciones disponibles: 1. GARITA  2. BIBLIOTECA  3. RECEPCION");
+    }
+
+    /** Convierte la opción numérica del usuario al nombre de una ubicación existente. */
+    private String elegirUbicacion() {
+        int opcion = Validacion.leerOpcion("Seleccione la ubicación (1-3): ", 1, 3);
+        if (opcion == 1) return "GARITA";
+        if (opcion == 2) return "BIBLIOTECA";
+        return "RECEPCION";
+    }
 }

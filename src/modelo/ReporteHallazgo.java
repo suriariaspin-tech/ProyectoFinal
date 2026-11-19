@@ -20,7 +20,7 @@ public class ReporteHallazgo extends Reporte {
                            String color, String descripcion, String caracteristicas,
                            LocalDateTime fechaHoraHallazgo, String lugarHallazgo, String fotografia,
                            String estadoRecepcion) {
-        super(codigo, categoria, marca, color, descripcion, caracteristicas, LocalDateTime.now(), "ABIERTO", fotografia);
+        super(codigo, categoria, marca, color, descripcion, caracteristicas, LocalDateTime.now(), estadoRecepcion, fotografia);
         this.usuarioReportante = usuarioReportante;
         this.fechaHoraHallazgo = fechaHoraHallazgo;
         this.lugarHallazgo = lugarHallazgo;
@@ -29,14 +29,8 @@ public class ReporteHallazgo extends Reporte {
 
     /** Devuelve la fecha del hallazgo usada por la búsqueda de coincidencias. */
     public LocalDateTime getFechaHoraHallazgo() { return fechaHoraHallazgo; }
-    /** Conserva compatibilidad con el nombre empleado por las interfaces y gestores. */
-    public LocalDateTime getFechaHallazgo() { return fechaHoraHallazgo; }
-    public void setFechaHallazgo(LocalDateTime fecha) { fechaHoraHallazgo = fecha; }
     public void setFechaHoraHallazgo(LocalDateTime fecha) { fechaHoraHallazgo = fecha; }
     public String getLugarHallazgo() { return lugarHallazgo; }
-    /** Conserva compatibilidad con el nombre empleado por las interfaces y gestores. */
-    public String getLugar() { return lugarHallazgo; }
-    public void setLugar(String lugar) { lugarHallazgo = lugar; }
     public void setLugarHallazgo(String lugar) { lugarHallazgo = lugar; }
     public String getEstadoRecepcion() { return estadoRecepcion; }
     public void setEstadoRecepcion(String estadoRecepcion) { this.estadoRecepcion = estadoRecepcion; }
@@ -46,19 +40,14 @@ public class ReporteHallazgo extends Reporte {
 
     /** Vincula el objeto físico y actualiza el estado de recepción en una sola operación. */
     public void confirmarRecepcion(ObjetoEncontrado objetoEncontrado) {
-        if (objetoEncontrado == null) throw new IllegalArgumentException("El objeto recibido es obligatorio.");
-        if (this.objetoEncontrado != null) throw new IllegalStateException("El hallazgo ya tiene una recepción confirmada.");
+        if (objetoEncontrado == null || this.objetoEncontrado != null) return;
         this.objetoEncontrado = objetoEncontrado;
         this.estadoRecepcion = "RECIBIDO";
+        setEstado("RECIBIDO");
     }
 
     /** Permite al gestor consultar la relación, pero evita separarla después de la recepción. */
     public void setObjetoEncontrado(ObjetoEncontrado objetoEncontrado) {
-        if (objetoEncontrado == null) {
-            if (this.objetoEncontrado != null) throw new IllegalStateException("No se puede borrar una recepción confirmada.");
-            this.objetoEncontrado = null;
-        } else {
-            confirmarRecepcion(objetoEncontrado);
-        }
+        if (objetoEncontrado != null) confirmarRecepcion(objetoEncontrado);
     }
 }

@@ -8,108 +8,144 @@ import modelo.Usuario;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
-/** Administra ubicaciones físicas, recepciones y traslados autorizados. */
+/** Registra recepciones y traslados físicos, y conserva las ubicaciones e historiales. */
 public class GestorCustodia {
-    /** Ubicaciones físicas existentes en el campus. */
+    /** Tres ubicaciones físicas configuradas para el campus. */
     private ArrayList<Ubicacion> ubicaciones;
-    /** Objetos que han sido recibidos físicamente. */
+    /** Objetos que sí se recibieron físicamente. */
     private ArrayList<ObjetoEncontrado> objetos;
-    /** Historial que se conserva al mover objetos. */
+    /** Historial general de los traslados realizados. */
     private ArrayList<MovimientoCustodia> movimientos;
-    /** Secuencia para asignar códigos únicos a los movimientos. */
+    /** Próximo número para asignar un código de movimiento. */
     private int siguienteMovimiento;
+    /** Explicación de la última operación rechazada. */
+    private String mensajeError;
 
-    /** Capacidades de demostración centralizadas; deben ajustarse a las capacidades reales autorizadas. */
+    /** Capacidades de demostración ajustables; no representan límites oficiales de la UDLA. */
     public static final int CAPACIDAD_DEMO_GARITA = 30;
     public static final int CAPACIDAD_DEMO_BIBLIOTECA = 30;
     public static final int CAPACIDAD_DEMO_RECEPCION = 30;
 
-    /** Crea las tres ubicaciones iniciales con categorías comunes y colecciones vacías. */
+    /** Crea Garita, Biblioteca y Recepción con las categorías iniciales permitidas. */
     public GestorCustodia() {
-        ubicaciones = new ArrayList<Ubicacion>(); objetos = new ArrayList<ObjetoEncontrado>();
-        movimientos = new ArrayList<MovimientoCustodia>(); siguienteMovimiento = 1;
+        ubicaciones = new ArrayList<Ubicacion>();
+        objetos = new ArrayList<ObjetoEncontrado>();
+        movimientos = new ArrayList<MovimientoCustodia>();
+        siguienteMovimiento = 1;
+        mensajeError = "";
         ArrayList<String> categorias = new ArrayList<String>();
-        categorias.add("Accesorios"); categorias.add("Electrónica"); categorias.add("Ropa");
-        categorias.add("Documentos"); categorias.add("Otros");
+        categorias.add("Accesorios");
+        categorias.add("Electrónica");
+        categorias.add("Ropa");
+        categorias.add("Documentos");
+        categorias.add("Otros");
         ubicaciones.add(new Ubicacion("UBI-01", "GARITA", CAPACIDAD_DEMO_GARITA, new ArrayList<String>(categorias)));
         ubicaciones.add(new Ubicacion("UBI-02", "BIBLIOTECA", CAPACIDAD_DEMO_BIBLIOTECA, new ArrayList<String>(categorias)));
         ubicaciones.add(new Ubicacion("UBI-03", "RECEPCION", CAPACIDAD_DEMO_RECEPCION, new ArrayList<String>(categorias)));
     }
 
-    /** Confirma la recepción solo tras validar reporte, permiso y espacio de destino. */
-    public ObjetoEncontrado registrarRecepcion(String codigoHallazgo, String nombreUbicacion, Usuario encargado,
-                                               GestorReportesHallazgo gestorHallazgos) {
-        validarEncargado(encargado);
-        ReporteHallazgo reporte = gestorHallazgos.buscarPorCodigo(codigoHallazgo);
-        if (reporte == null) throw new IllegalArgumentException("No existe el reporte de hallazgo indicado.");
-        if (reporte.getObjetoEncontrado() != null || "RECIBIDO".equals(reporte.getEstadoRecepcion()))
-            throw new IllegalArgumentException("Este objeto ya fue recibido anteriormente.");
+    /** Recibe un hallazgo en la ubicación elegida; devuelve null y un mensaje si alguna regla falla. */
+    public ObjetoEncontrado registrarRecepcion(String codigoHallazgo, String nombreUbicacion,
+                                               Usuario encargado, GestorReportesHallazgo gestorHallazgos) {
+        mensajeError = "";
+        ReporteHallazgo reporte = gestorHallazgos == null ? null : gestorHallazgos.buscarPorCodigo(codigoHallazgo);
         Ubicacion destino = buscarUbicacion(nombreUbicacion);
-        validarDestino(destino, reporte.getCategoria());
+        if (!esEncargado(encargado)) mensajeError = "Solo un encargado activo puede confirmar una recepción.";
+        else if (reporte == null) mensajeError = "No existe el reporte de hallazgo indicado.";
+        else if (reporte.getObjetoEncontrado() != null) mensajeError = "Este objeto ya fue recibido.";
+        else if (destino == null) mensajeError = "La ubicación seleccionada no existe.";
+        else if (!destino.isHabilitada()) mensajeError = "La ubicación está inhabilitada.";
+        else if (!destino.tieneEspacio()) mensajeError = "La ubicación no tiene espacios disponibles.";
+        else if (!destino.admiteCategoria(reporte.getCategoria())) mensajeError = "La ubicación no admite esa categoría.";
+        if (!mensajeError.isEmpty()) return null;
 
-        // Se crea y asocia el objeto físico solo después de superar todas las validaciones.
         ObjetoEncontrado objeto = new ObjetoEncontrado(reporte.getCodigo(), reporte, destino, "EN_CUSTODIA");
-        destino.registrarEntrada(objeto);
+        if (!destino.registrarEntrada(objeto)) {
+            mensajeError = "No se pudo agregar el objeto a la ubicación.";
+            return null;
+        }
         objetos.add(objeto);
         reporte.confirmarRecepcion(objeto);
         return objeto;
     }
 
-    /** Mueve un objeto después de validar todas las condiciones sin alterar el estado ante un error. */
-    public void trasladar(String codigoObjeto, String nombreDestino, String motivo, Usuario encargado) {
-        validarEncargado(encargado);
-        if (motivo == null || motivo.trim().isEmpty()) throw new IllegalArgumentException("El motivo del traslado es obligatorio.");
+    /** Traslada un objeto tras validar todos los datos; si falla, no cambia ninguna colección. */
+    public boolean trasladar(String codigoObjeto, String nombreDestino, String motivo, Usuario encargado) {
+        mensajeError = "";
         ObjetoEncontrado objeto = buscarObjeto(codigoObjeto);
-        if (objeto == null || !"EN_CUSTODIA".equals(objeto.getEstadoCustodia()))
-            throw new IllegalArgumentException("El objeto no está actualmente bajo custodia.");
-        Ubicacion origen = objeto.getUbicacionActual();
         Ubicacion destino = buscarUbicacion(nombreDestino);
-        if (destino == origen) throw new IllegalArgumentException("La ubicación de destino debe ser diferente de la actual.");
-        validarDestino(destino, objeto.getReporteHallazgo().getCategoria());
-        origen.validarSalida(objeto);
-        destino.validarEntrada(objeto);
+        if (!esEncargado(encargado)) mensajeError = "Solo un encargado activo puede realizar traslados.";
+        else if (motivo == null || motivo.trim().isEmpty()) mensajeError = "El motivo del traslado es obligatorio.";
+        else if (objeto == null) mensajeError = "No existe un objeto recibido con ese código.";
+        else if (!objeto.getEstadoCustodia().equals("EN_CUSTODIA")) mensajeError = "El objeto no está bajo custodia.";
+        else if (destino == null) mensajeError = "La ubicación de destino no existe.";
+        else if (objeto.getUbicacionActual() == destino) mensajeError = "El destino debe ser diferente de la ubicación actual.";
+        else if (!destino.isHabilitada()) mensajeError = "La ubicación de destino está inhabilitada.";
+        else if (!destino.tieneEspacio()) mensajeError = "La ubicación de destino no tiene espacios disponibles.";
+        else if (!destino.admiteCategoria(objeto.getReporteHallazgo().getCategoria())) mensajeError = "La ubicación de destino no admite esa categoría.";
+        else if (!objeto.getUbicacionActual().validarSalida(objeto)) mensajeError = "El objeto no figura en su ubicación de origen.";
+        else if (!destino.validarEntrada(objeto)) mensajeError = "No se pudo validar la entrada en el destino.";
+        if (!mensajeError.isEmpty()) return false;
 
-        // Las ubicaciones actualizan a la vez su ocupación y su relación con el objeto.
-        origen.registrarSalida(objeto);
-        destino.registrarEntrada(objeto);
+        Ubicacion origen = objeto.getUbicacionActual();
+        // Todas las validaciones anteriores terminan antes de actualizar las dos ubicaciones y el historial.
+        if (!origen.registrarSalida(objeto)) {
+            mensajeError = "No se pudo retirar el objeto de su ubicación de origen.";
+            return false;
+        }
+        if (!destino.registrarEntrada(objeto)) {
+            // Si el destino rechaza la entrada, se restaura la salida para no dejar cambios parciales.
+            objeto.actualizarUbicacion(origen);
+            origen.registrarEntrada(objeto);
+            mensajeError = "No se pudo agregar el objeto al destino; se restauró la ubicación de origen.";
+            return false;
+        }
         objeto.actualizarUbicacion(destino);
-        MovimientoCustodia movimiento = new MovimientoCustodia("MOV-" + siguienteMovimiento++, objeto,
+        MovimientoCustodia movimiento = new MovimientoCustodia("MOV-" + siguienteMovimiento, objeto,
                 origen, destino, LocalDateTime.now(), motivo.trim(), "", encargado);
+        siguienteMovimiento++;
         movimientos.add(movimiento);
         objeto.agregarMovimiento(movimiento);
+        return true;
     }
 
-    /** Busca una ubicación por nombre, sin distinguir mayúsculas. */
+    /** Busca una ubicación por nombre, sin distinguir mayúsculas; devuelve null si no existe. */
     public Ubicacion buscarUbicacion(String nombre) {
-        if (nombre == null) throw new IllegalArgumentException("Debe seleccionar una ubicación.");
-        for (Ubicacion ubicacion : ubicaciones) if (ubicacion.getNombre().equalsIgnoreCase(nombre.trim())) return ubicacion;
-        throw new IllegalArgumentException("La ubicación indicada no existe.");
-    }
-    /** Busca un objeto físico por el código de su reporte de hallazgo. */
-    public ObjetoEncontrado buscarObjeto(String codigo) {
-        if (codigo == null) return null;
-        for (ObjetoEncontrado objeto : objetos) if (objeto.getCodigo().equalsIgnoreCase(codigo.trim())) return objeto;
+        if (nombre == null) return null;
+        for (Ubicacion ubicacion : ubicaciones) {
+            if (ubicacion.getNombre().equalsIgnoreCase(nombre.trim())) return ubicacion;
+        }
         return null;
     }
-    /** Obtiene los traslados históricos del objeto; la ubicación inicial queda en su estado actual. */
+
+    /** Busca un objeto recibido por código; devuelve null si no existe. */
+    public ObjetoEncontrado buscarObjeto(String codigo) {
+        if (codigo == null) return null;
+        for (ObjetoEncontrado objeto : objetos) {
+            if (objeto.getCodigoObjeto().equalsIgnoreCase(codigo.trim())) return objeto;
+        }
+        return null;
+    }
+
+    /** Devuelve una copia del historial de traslados del objeto indicado. */
     public ArrayList<MovimientoCustodia> consultarHistorial(String codigoObjeto) {
         ArrayList<MovimientoCustodia> historial = new ArrayList<MovimientoCustodia>();
         ObjetoEncontrado objeto = buscarObjeto(codigoObjeto);
         if (objeto != null) historial.addAll(objeto.getMovimientos());
         return historial;
     }
-    /** Revisa todas las condiciones del destino antes de modificar la custodia. */
-    private void validarDestino(Ubicacion destino, String categoria) {
-        if (!destino.isHabilitada()) throw new IllegalArgumentException("La ubicación está inhabilitada.");
-        if (!destino.tieneEspacio()) throw new IllegalArgumentException("La ubicación no tiene espacios disponibles.");
-        if (!destino.admiteCategoria(categoria)) throw new IllegalArgumentException("La ubicación no admite la categoría " + categoria + ".");
+
+    /** Comprueba que la cuenta tenga el rol y estado correctos para una operación de custodia. */
+    private boolean esEncargado(Usuario usuario) {
+        return usuario != null && usuario.getRol().equals("ENCARGADO")
+                && usuario.getEstadoCuenta().equals("ACTIVA");
     }
-    /** Protege las operaciones administrativas para que solo las realice un encargado activo. */
-    private void validarEncargado(Usuario encargado) {
-        if (encargado == null || !"ENCARGADO".equals(encargado.getRol()) || !"ACTIVA".equals(encargado.getEstado()))
-            throw new IllegalArgumentException("Esta operación requiere una cuenta de encargado autorizada.");
-    }
-    public ArrayList<Ubicacion> getUbicaciones() { return ubicaciones; }
-    public ArrayList<ObjetoEncontrado> getObjetos() { return objetos; }
-    public ArrayList<MovimientoCustodia> getMovimientos() { return movimientos; }
+    /** Devuelve el motivo de la última operación de custodia rechazada. */
+    public String getMensajeError() { return mensajeError; }
+    /** Devuelve las ubicaciones disponibles en la sesión. */
+    public ArrayList<Ubicacion> getUbicaciones() { return new ArrayList<Ubicacion>(ubicaciones); }
+    /** Devuelve los objetos recibidos en la sesión. */
+    public ArrayList<ObjetoEncontrado> getObjetos() { return new ArrayList<ObjetoEncontrado>(objetos); }
+    /** Devuelve los movimientos hechos durante la sesión. */
+    public ArrayList<MovimientoCustodia> getMovimientos() { return new ArrayList<MovimientoCustodia>(movimientos); }
 }

@@ -5,66 +5,97 @@ import modelo.Usuario;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
-/** Registra, valida, edita y consulta reportes de objetos perdidos. */
+/** Registra, edita y busca reportes de objetos perdidos. */
 public class GestorReportesPerdida {
-    /** Reportes creados durante la ejecución. */
+    /** Reportes de pérdida guardados durante esta ejecución. */
     private ArrayList<ReportePerdida> reportes;
-    /** Secuencia que diferencia los códigos de los reportes. */
+    /** Próximo número para asignar códigos únicos. */
     private int siguienteCodigo;
+    /** Explicación de la última operación rechazada. */
+    private String mensajeError;
 
-    /** Inicializa la colección en memoria. */
-    public GestorReportesPerdida() { reportes = new ArrayList<ReportePerdida>(); siguienteCodigo = 1; }
+    /** Crea una colección vacía de reportes. */
+    public GestorReportesPerdida() {
+        reportes = new ArrayList<ReportePerdida>();
+        siguienteCodigo = 1;
+        mensajeError = "";
+    }
 
-    /** Valida los datos y crea un reporte nuevo en estado ABIERTO. */
+    /** Valida y registra una pérdida abierta; devuelve null y guarda un mensaje si hay errores. */
     public ReportePerdida registrar(Usuario propietario, String categoria, String marca, String color,
                                     String descripcion, String caracteristicas, LocalDateTime fecha,
                                     String lugar, String fotografia) {
-        if (propietario == null) throw new IllegalArgumentException("Debe iniciar sesión para reportar una pérdida.");
-        validar(categoria, color, descripcion, fecha, lugar);
-        ReportePerdida reporte = new ReportePerdida("PER-" + siguienteCodigo++, propietario, categoria.trim(),
-                limpiarOpcional(marca), color.trim(), descripcion.trim(), limpiarOpcional(caracteristicas),
-                fecha, lugar.trim(), limpiarOpcional(fotografia), "ABIERTO");
+        mensajeError = validar(propietario, categoria, color, descripcion, fecha, lugar);
+        if (!mensajeError.isEmpty()) return null;
+        ReportePerdida reporte = new ReportePerdida("PER-" + siguienteCodigo, propietario,
+                categoria.trim(), limpiarOpcional(marca), color.trim(), descripcion.trim(),
+                limpiarOpcional(caracteristicas), fecha, lugar.trim(), limpiarOpcional(fotografia), "ABIERTO");
+        siguienteCodigo++;
         reportes.add(reporte);
         propietario.agregarReportePerdida(reporte);
         return reporte;
     }
 
-    /** Permite al propietario editar un reporte abierto, sin modificar dueño o estado. */
-    public void editar(String codigo, Usuario propietario, String categoria, String marca, String color,
-                       String descripcion, String caracteristicas, LocalDateTime fecha, String lugar, String fotografia) {
+    /** Edita los datos de un reporte abierto únicamente si pertenece al usuario indicado. */
+    public boolean editar(String codigo, Usuario propietario, String categoria, String marca, String color,
+                          String descripcion, String caracteristicas, LocalDateTime fecha,
+                          String lugar, String fotografia) {
         ReportePerdida reporte = buscarPorCodigo(codigo);
-        if (reporte == null) throw new IllegalArgumentException("No existe el reporte indicado.");
-        if (reporte.getPropietario() != propietario) throw new IllegalArgumentException("Solo el propietario puede editar este reporte.");
-        if (!"ABIERTO".equals(reporte.getEstado())) throw new IllegalArgumentException("No se puede editar un reporte cerrado.");
-        validar(categoria, color, descripcion, fecha, lugar);
-        reporte.setCategoria(categoria.trim()); reporte.setMarca(limpiarOpcional(marca)); reporte.setColor(color.trim());
-        reporte.setDescripcion(descripcion.trim()); reporte.setCaracteristicas(limpiarOpcional(caracteristicas));
-        reporte.setFechaPerdida(fecha); reporte.setLugar(lugar.trim()); reporte.setFotografia(limpiarOpcional(fotografia));
+        mensajeError = "";
+        if (reporte == null) mensajeError = "No existe el reporte indicado.";
+        else if (reporte.getPropietario() != propietario) mensajeError = "El reporte no pertenece a esta cuenta.";
+        else if (!reporte.getEstado().equals("ABIERTO")) mensajeError = "No se puede editar un reporte cerrado.";
+        else mensajeError = validar(propietario, categoria, color, descripcion, fecha, lugar);
+        if (!mensajeError.isEmpty()) return false;
+        reporte.setCategoria(categoria.trim());
+        reporte.setMarca(limpiarOpcional(marca));
+        reporte.setColor(color.trim());
+        reporte.setDescripcion(descripcion.trim());
+        reporte.setCaracteristicas(limpiarOpcional(caracteristicas));
+        reporte.setFechaHoraPerdida(fecha);
+        reporte.setLugarPerdida(lugar.trim());
+        reporte.setFotografia(limpiarOpcional(fotografia));
+        return true;
     }
 
-    /** Devuelve un reporte con el código indicado o null si no existe. */
+    /** Busca un reporte por código o devuelve null si no se encuentra. */
     public ReportePerdida buscarPorCodigo(String codigo) {
-        for (ReportePerdida reporte : reportes) if (reporte.getCodigo().equalsIgnoreCase(codigo)) return reporte;
+        if (codigo == null) return null;
+        for (ReportePerdida reporte : reportes) {
+            if (reporte.getCodigo().equalsIgnoreCase(codigo.trim())) return reporte;
+        }
         return null;
     }
 
-    /** Devuelve solamente los reportes de pérdida pertenecientes a una persona. */
+    /** Devuelve reportes cuyo propietario es la cuenta recibida. */
     public ArrayList<ReportePerdida> consultarPorPropietario(Usuario propietario) {
         ArrayList<ReportePerdida> propios = new ArrayList<ReportePerdida>();
-        for (ReportePerdida reporte : reportes) if (reporte.getPropietario() == propietario) propios.add(reporte);
+        for (ReportePerdida reporte : reportes) {
+            if (reporte.getPropietario() == propietario) propios.add(reporte);
+        }
         return propios;
     }
 
-    /** Comprueba los campos obligatorios y que la fecha no sea futura. */
-    private void validar(String categoria, String color, String descripcion, LocalDateTime fecha, String lugar) {
-        obligatorio(categoria, "La categoría es obligatoria."); obligatorio(color, "El color es obligatorio.");
-        obligatorio(descripcion, "La descripción es obligatoria."); obligatorio(lugar, "El lugar es obligatorio.");
-        if (fecha == null) throw new IllegalArgumentException("La fecha de pérdida es obligatoria.");
-        if (fecha.isAfter(LocalDateTime.now())) throw new IllegalArgumentException("La fecha de pérdida no puede estar en el futuro.");
+    /** Revisa los datos obligatorios y que la fecha del suceso no sea futura. */
+    private String validar(Usuario propietario, String categoria, String color, String descripcion,
+                           LocalDateTime fecha, String lugar) {
+        if (propietario == null) return "Debe iniciar sesión para registrar una pérdida.";
+        if (vacio(categoria)) return "La categoría es obligatoria.";
+        if (vacio(color)) return "El color es obligatorio.";
+        if (vacio(descripcion)) return "La descripción es obligatoria.";
+        if (vacio(lugar)) return "El lugar donde se perdió es obligatorio.";
+        if (fecha == null) return "La fecha de pérdida es obligatoria.";
+        if (fecha.isAfter(LocalDateTime.now())) return "La fecha de pérdida no puede estar en el futuro.";
+        return "";
     }
-    /** Comprueba que un dato requerido tenga contenido. */
-    private void obligatorio(String valor, String mensaje) { if (valor == null || valor.trim().isEmpty()) throw new IllegalArgumentException(mensaje); }
-    /** Convierte los campos opcionales nulos en texto vacío. */
-    private String limpiarOpcional(String valor) { return valor == null ? "" : valor.trim(); }
-    public ArrayList<ReportePerdida> getReportes() { return reportes; }
+
+    /** Comprueba si falta un dato de texto obligatorio. */
+    private boolean vacio(String texto) { return texto == null || texto.trim().isEmpty(); }
+    /** Convierte un campo opcional nulo en texto vacío. */
+    private String limpiarOpcional(String texto) { return texto == null ? "" : texto.trim(); }
+    /** Devuelve el mensaje de la última operación rechazada. */
+    public String getMensajeError() { return mensajeError; }
+    /** Devuelve todos los reportes de pérdida de la sesión. */
+    /** Devuelve una copia de la lista de pérdidas conservando las mismas entidades. */
+    public ArrayList<ReportePerdida> getReportes() { return new ArrayList<ReportePerdida>(reportes); }
 }
