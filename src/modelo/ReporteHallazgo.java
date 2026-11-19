@@ -34,7 +34,6 @@ public class ReporteHallazgo extends Reporte {
     public String getLugarHallazgo() { return lugarHallazgo; }
     public void setLugarHallazgo(String lugar) { lugarHallazgo = lugar; }
     public String getEstadoRecepcion() { return estadoRecepcion; }
-    public void setEstadoRecepcion(String estadoRecepcion) { this.estadoRecepcion = estadoRecepcion; }
     public Usuario getUsuarioReportante() { return usuarioReportante; }
     public void setUsuarioReportante(Usuario usuarioReportante) { this.usuarioReportante = usuarioReportante; }
     public ObjetoEncontrado getObjetoEncontrado() { return objetoEncontrado; }
