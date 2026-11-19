@@ -92,7 +92,10 @@ public class GestorReportesPerdida {
     /** Comprueba si falta un dato de texto obligatorio. */
     private boolean vacio(String texto) { return texto == null || texto.trim().isEmpty(); }
     /** Convierte un campo opcional nulo en texto vacío. */
-    private String limpiarOpcional(String texto) { return texto == null ? "" : texto.trim(); }
+    private String limpiarOpcional(String texto) {
+        if (texto == null) return "";
+        return texto.trim();
+    }
     /** Devuelve el mensaje de la última operación rechazada. */
     public String getMensajeError() { return mensajeError; }
     /** Devuelve todos los reportes de pérdida de la sesión. */

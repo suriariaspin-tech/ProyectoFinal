@@ -20,7 +20,8 @@ public class ReporteHallazgo extends Reporte {
                            String color, String descripcion, String caracteristicas,
                            LocalDateTime fechaHoraHallazgo, String lugarHallazgo, String fotografia,
                            String estadoRecepcion) {
-        super(codigo, categoria, marca, color, descripcion, caracteristicas, LocalDateTime.now(), estadoRecepcion, fotografia);
+        // El estado general queda ABIERTO; la recepción se controla en su atributo independiente.
+        super(codigo, categoria, marca, color, descripcion, caracteristicas, LocalDateTime.now(), "ABIERTO", fotografia);
         this.usuarioReportante = usuarioReportante;
         this.fechaHoraHallazgo = fechaHoraHallazgo;
         this.lugarHallazgo = lugarHallazgo;
@@ -43,7 +44,6 @@ public class ReporteHallazgo extends Reporte {
         if (objetoEncontrado == null || this.objetoEncontrado != null) return;
         this.objetoEncontrado = objetoEncontrado;
         this.estadoRecepcion = "RECIBIDO";
-        setEstado("RECIBIDO");
     }
 
     /** Permite al gestor consultar la relación, pero evita separarla después de la recepción. */

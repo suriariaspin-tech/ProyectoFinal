@@ -34,23 +34,25 @@ public class MenuUsuario {
             System.out.println("3. Consultar mis reportes de pérdida y estado");
             System.out.println("4. Editar reporte de pérdida");
             System.out.println("5. Consultar posibles coincidencias");
-            System.out.println("6. Consultar y editar perfil");
-            System.out.println("7. Consultar mis reportes de hallazgo");
-            System.out.println("8. Editar reporte de hallazgo pendiente");
-            System.out.println("9. Cerrar sesión");
-            opcion = Validacion.leerOpcion("Seleccione una opción: ", 1, 9);
+            System.out.println("6. Consultar perfil");
+            System.out.println("7. Editar perfil");
+            System.out.println("8. Consultar mis reportes de hallazgo");
+            System.out.println("9. Editar reporte de hallazgo pendiente");
+            System.out.println("10. Cerrar sesión");
+            opcion = Validacion.leerOpcion("Seleccione una opción: ", 1, 10);
             switch (opcion) {
                 case 1: interfazReportes.registrarPerdida(usuario); break;
                 case 2: interfazReportes.registrarHallazgo(usuario); break;
                 case 3: interfazReportes.consultarPerdidas(usuario); break;
                 case 4: interfazReportes.editarPerdida(usuario); break;
                 case 5: interfazCoincidencias.consultar(usuario); break;
-                case 6: interfazUsuarios.consultarYEditar(usuario); break;
-                case 7: interfazReportes.consultarHallazgos(usuario); break;
-                case 8: interfazReportes.editarHallazgo(usuario); break;
-                case 9: System.out.println("Sesión cerrada."); break;
+                case 6: interfazUsuarios.consultarPerfil(usuario); break;
+                case 7: interfazUsuarios.editarPerfil(usuario); break;
+                case 8: interfazReportes.consultarHallazgos(usuario); break;
+                case 9: interfazReportes.editarHallazgo(usuario); break;
+                case 10: System.out.println("Sesión cerrada."); break;
                 default: System.out.println("Opción no válida.");
             }
-        } while (opcion != 9);
+        } while (opcion != 10);
     }
 }

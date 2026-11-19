@@ -34,12 +34,15 @@ public class InterfazUsuarios {
         return usuario;
     }
 
-    /** Muestra el perfil y ofrece editar nombre, correo y teléfono sin cambiar ID Banner ni rol. */
-    public void consultarYEditar(Usuario usuario) {
+    /** Muestra los datos registrados del usuario sin solicitar cambios. */
+    public void consultarPerfil(Usuario usuario) {
         System.out.println("\n--- Mi perfil ---");
         System.out.println(usuario);
-        int opcion = Validacion.leerOpcion("¿Editar nombre, correo y teléfono? 1. Sí  2. No: ", 1, 2);
-        if (opcion == 2) return;
+    }
+
+    /** Solicita cambios permitidos y actualiza nombres, correo y teléfono sin tocar ID Banner ni rol. */
+    public void editarPerfil(Usuario usuario) {
+        System.out.println("\n--- Editar perfil ---");
         String nombre = Validacion.leerTextoObligatorio("Nombre completo: ");
         String correo = Validacion.leerTextoObligatorio("Correo electrónico: ");
         String telefono = Validacion.leerTextoObligatorio("Teléfono: ");

@@ -22,10 +22,11 @@ public class Ubicacion {
     /** Crea una ubicación vacía con su capacidad y categorías permitidas. */
     public Ubicacion(String codigo, String nombre, int capacidadMaxima, ArrayList<String> categoriasAdmitidas) {
         this.codigoUbicacion = codigo; this.nombre = nombre;
-        this.capacidadMaxima = capacidadMaxima > 0 ? capacidadMaxima : 1;
+        if (capacidadMaxima > 0) this.capacidadMaxima = capacidadMaxima;
+        else this.capacidadMaxima = 1;
         this.ocupacionActual = 0;
-        this.categoriasAdmitidas = categoriasAdmitidas == null
-                ? new ArrayList<String>() : new ArrayList<String>(categoriasAdmitidas);
+        if (categoriasAdmitidas == null) this.categoriasAdmitidas = new ArrayList<String>();
+        else this.categoriasAdmitidas = new ArrayList<String>(categoriasAdmitidas);
         this.habilitada = true;
         this.objetos = new ArrayList<ObjetoEncontrado>();
     }

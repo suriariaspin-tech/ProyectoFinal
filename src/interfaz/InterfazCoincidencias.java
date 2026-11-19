@@ -53,5 +53,8 @@ public class InterfazCoincidencias {
     }
 
     /** Indica que una marca vacía no fue informada. */
-    private String textoMarca(String marca) { return marca == null || marca.trim().isEmpty() ? "No informada" : marca; }
+    private String textoMarca(String marca) {
+        if (marca == null || marca.trim().isEmpty()) return "No informada";
+        return marca;
+    }
 }

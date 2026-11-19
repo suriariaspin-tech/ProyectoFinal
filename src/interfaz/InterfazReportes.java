@@ -74,8 +74,11 @@ public class InterfazReportes {
             for (Coincidencia coincidencia : gestorCoincidencias.getCoincidencias()) {
                 if (coincidencia.getReportePerdida() == reporte) tieneCoincidencia = true;
             }
+            String estadoCoincidencia;
+            if (tieneCoincidencia) estadoCoincidencia = "SÍ";
+            else estadoCoincidencia = "NO";
             System.out.println(resumen(reporte) + " | Estado: " + reporte.getEstado()
-                    + " | Posibles coincidencias: " + (tieneCoincidencia ? "SÍ" : "NO"));
+                    + " | Posibles coincidencias: " + estadoCoincidencia);
         }
     }
 

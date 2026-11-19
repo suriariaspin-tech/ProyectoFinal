@@ -36,11 +36,14 @@ public class InterfazCustodia {
     public void consultarDisponibilidad() {
         mostrarUbicaciones();
         for (Ubicacion ubicacion : gestorCustodia.getUbicaciones()) {
+            String estado;
+            if (ubicacion.isHabilitada()) estado = "HABILITADA";
+            else estado = "INHABILITADA";
             System.out.println(ubicacion.getNombre() + " | Capacidad: " + ubicacion.getCapacidadMaxima()
                     + " | Ocupación: " + ubicacion.getOcupacionActual()
                     + " | Espacios disponibles: " + ubicacion.getEspaciosDisponibles()
                     + " | Categorías: " + ubicacion.getCategoriasAdmitidas()
-                    + " | Estado: " + (ubicacion.isHabilitada() ? "HABILITADA" : "INHABILITADA"));
+                    + " | Estado: " + estado);
         }
     }
 
@@ -69,9 +72,12 @@ public class InterfazCustodia {
         System.out.println("Objeto: " + objeto.getCodigoObjeto() + " | Estado: " + objeto.getEstadoCustodia()
                 + " | Ubicación actual: " + objeto.getUbicacionActual().getNombre());
         ArrayList<MovimientoCustodia> historial = gestorCustodia.consultarHistorial(codigo);
-        if (historial.isEmpty()) System.out.println("El objeto aún no tiene traslados.");
+        if (historial.isEmpty()) System.out.println("El objeto aún no tiene movimientos.");
         for (MovimientoCustodia movimiento : historial) {
-            System.out.println(movimiento.getCodigoMovimiento() + " | " + movimiento.getUbicacionOrigen().getNombre()
+            String origen;
+            if (movimiento.getUbicacionOrigen() == null) origen = "RECEPCIÓN INICIAL";
+            else origen = movimiento.getUbicacionOrigen().getNombre();
+            System.out.println(movimiento.getCodigoMovimiento() + " | " + origen
                     + " -> " + movimiento.getUbicacionDestino().getNombre()
                     + " | Fecha: " + movimiento.getFechaHora()
                     + " | Motivo: " + movimiento.getMotivo()

@@ -14,7 +14,7 @@ public class GestorCustodia {
     private ArrayList<Ubicacion> ubicaciones;
     /** Objetos que sí se recibieron físicamente. */
     private ArrayList<ObjetoEncontrado> objetos;
-    /** Historial general de los traslados realizados. */
+    /** Historial general de las recepciones iniciales y los traslados realizados. */
     private ArrayList<MovimientoCustodia> movimientos;
     /** Próximo número para asignar un código de movimiento. */
     private int siguienteMovimiento;
@@ -48,7 +48,8 @@ public class GestorCustodia {
     public ObjetoEncontrado registrarRecepcion(String codigoHallazgo, String nombreUbicacion,
                                                Usuario encargado, GestorReportesHallazgo gestorHallazgos) {
         mensajeError = "";
-        ReporteHallazgo reporte = gestorHallazgos == null ? null : gestorHallazgos.buscarPorCodigo(codigoHallazgo);
+        ReporteHallazgo reporte = null;
+        if (gestorHallazgos != null) reporte = gestorHallazgos.buscarPorCodigo(codigoHallazgo);
         Ubicacion destino = buscarUbicacion(nombreUbicacion);
         if (!esEncargado(encargado)) mensajeError = "Solo un encargado activo puede confirmar una recepción.";
         else if (reporte == null) mensajeError = "No existe el reporte de hallazgo indicado.";
@@ -66,6 +67,12 @@ public class GestorCustodia {
         }
         objetos.add(objeto);
         reporte.confirmarRecepcion(objeto);
+        // La recepción inicial también forma parte del recorrido, aunque el origen sea externo al campus.
+        MovimientoCustodia movimiento = new MovimientoCustodia("MOV-" + siguienteMovimiento, objeto,
+                null, destino, LocalDateTime.now(), "Recepción inicial", "", encargado);
+        siguienteMovimiento++;
+        movimientos.add(movimiento);
+        objeto.agregarMovimiento(movimiento);
         return objeto;
     }
 
@@ -127,7 +134,7 @@ public class GestorCustodia {
         return null;
     }
 
-    /** Devuelve una copia del historial de traslados del objeto indicado. */
+    /** Devuelve una copia del historial de movimientos del objeto indicado. */
     public ArrayList<MovimientoCustodia> consultarHistorial(String codigoObjeto) {
         ArrayList<MovimientoCustodia> historial = new ArrayList<MovimientoCustodia>();
         ObjetoEncontrado objeto = buscarObjeto(codigoObjeto);

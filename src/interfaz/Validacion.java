@@ -34,15 +34,20 @@ public class Validacion {
 
     /** Lee un entero y repite la pregunta cuando el texto no representa un número. */
     public static int leerEntero(String mensaje) {
-        while (true) {
+        int numero = 0;
+        boolean valido = false;
+        while (!valido) {
             System.out.print(mensaje);
-            String texto = ENTRADA.nextLine().trim();
-            try {
-                return Integer.parseInt(texto);
-            } catch (NumberFormatException error) {
+            if (ENTRADA.hasNextInt()) {
+                numero = ENTRADA.nextInt();
+                ENTRADA.nextLine();
+                valido = true;
+            } else {
+                ENTRADA.nextLine();
                 System.out.println("Ingrese un número entero válido.");
             }
         }
+        return numero;
     }
 
     /** Lee una opción de menú y comprueba que esté entre el mínimo y el máximo indicados. */
@@ -59,18 +64,27 @@ public class Validacion {
 
     /** Lee un número decimal, validando que la persona escriba un valor numérico. */
     public static double leerNumero(String mensaje) {
-        while (true) {
+        double numero = 0;
+        boolean valido = false;
+        while (!valido) {
             System.out.print(mensaje);
-            String texto = ENTRADA.nextLine().trim();
-            try {
-                return Double.parseDouble(texto);
-            } catch (NumberFormatException error) {
+            if (ENTRADA.hasNextDouble()) {
+                numero = ENTRADA.nextDouble();
+                ENTRADA.nextLine();
+                valido = true;
+            } else {
+                ENTRADA.nextLine();
                 System.out.println("Ingrese un número válido.");
             }
         }
+        return numero;
     }
 
-    /** Lee una fecha pasada o presente con formato yyyy-MM-dd HH:mm usando LocalDateTime para comparar su orden. */
+    /**
+     * Lee una fecha pasada o presente. LocalDateTime permite comparar cronológicamente
+     * pérdida y hallazgo; DateTimeFormatter define su formato. DateTimeParseException
+     * se captura únicamente para volver a pedir fechas con formato o calendario inválido.
+     */
     public static LocalDateTime leerFechaNoFutura(String mensaje) {
         while (true) {
             System.out.print(mensaje + " (AAAA-MM-DD HH:MM): ");
