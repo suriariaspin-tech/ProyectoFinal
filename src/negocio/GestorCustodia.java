@@ -16,6 +16,8 @@ public class GestorCustodia {
     private ArrayList<ObjetoEncontrado> objetos;
     /** Historial que se conserva al mover objetos. */
     private ArrayList<MovimientoCustodia> movimientos;
+    /** Secuencia para asignar códigos únicos a los movimientos. */
+    private int siguienteMovimiento;
 
     /** Capacidades de demostración centralizadas; deben ajustarse a las capacidades reales autorizadas. */
     public static final int CAPACIDAD_DEMO_GARITA = 30;
@@ -25,7 +27,7 @@ public class GestorCustodia {
     /** Crea las tres ubicaciones iniciales con categorías comunes y colecciones vacías. */
     public GestorCustodia() {
         ubicaciones = new ArrayList<Ubicacion>(); objetos = new ArrayList<ObjetoEncontrado>();
-        movimientos = new ArrayList<MovimientoCustodia>();
+        movimientos = new ArrayList<MovimientoCustodia>(); siguienteMovimiento = 1;
         ArrayList<String> categorias = new ArrayList<String>();
         categorias.add("Accesorios"); categorias.add("Electrónica"); categorias.add("Ropa");
         categorias.add("Documentos"); categorias.add("Otros");
@@ -40,16 +42,16 @@ public class GestorCustodia {
         validarEncargado(encargado);
         ReporteHallazgo reporte = gestorHallazgos.buscarPorCodigo(codigoHallazgo);
         if (reporte == null) throw new IllegalArgumentException("No existe el reporte de hallazgo indicado.");
-        if (reporte.getObjetoEncontrado() != null || "RECIBIDO".equals(reporte.getEstado()))
+        if (reporte.getObjetoEncontrado() != null || "RECIBIDO".equals(reporte.getEstadoRecepcion()))
             throw new IllegalArgumentException("Este objeto ya fue recibido anteriormente.");
         Ubicacion destino = buscarUbicacion(nombreUbicacion);
         validarDestino(destino, reporte.getCategoria());
 
         // Se crea y asocia el objeto físico solo después de superar todas las validaciones.
         ObjetoEncontrado objeto = new ObjetoEncontrado(reporte.getCodigo(), reporte, destino, "EN_CUSTODIA");
-        destino.getObjetos().add(objeto); objetos.add(objeto);
-        reporte.setObjetoEncontrado(objeto); reporte.setEstado("RECIBIDO");
-        movimientos.add(new MovimientoCustodia(objeto, null, destino, LocalDateTime.now(), "Recepción física inicial", encargado));
+        destino.registrarEntrada(objeto);
+        objetos.add(objeto);
+        reporte.confirmarRecepcion(objeto);
         return objeto;
     }
 
@@ -64,10 +66,17 @@ public class GestorCustodia {
         Ubicacion destino = buscarUbicacion(nombreDestino);
         if (destino == origen) throw new IllegalArgumentException("La ubicación de destino debe ser diferente de la actual.");
         validarDestino(destino, objeto.getReporteHallazgo().getCategoria());
+        origen.validarSalida(objeto);
+        destino.validarEntrada(objeto);
 
-        // Las dos listas, la ubicación actual y el historial cambian solo después de validar el traslado completo.
-        origen.getObjetos().remove(objeto); destino.getObjetos().add(objeto); objeto.setUbicacionActual(destino);
-        movimientos.add(new MovimientoCustodia(objeto, origen, destino, LocalDateTime.now(), motivo.trim(), encargado));
+        // Las ubicaciones actualizan a la vez su ocupación y su relación con el objeto.
+        origen.registrarSalida(objeto);
+        destino.registrarEntrada(objeto);
+        objeto.actualizarUbicacion(destino);
+        MovimientoCustodia movimiento = new MovimientoCustodia("MOV-" + siguienteMovimiento++, objeto,
+                origen, destino, LocalDateTime.now(), motivo.trim(), "", encargado);
+        movimientos.add(movimiento);
+        objeto.agregarMovimiento(movimiento);
     }
 
     /** Busca una ubicación por nombre, sin distinguir mayúsculas. */
@@ -82,16 +91,17 @@ public class GestorCustodia {
         for (ObjetoEncontrado objeto : objetos) if (objeto.getCodigo().equalsIgnoreCase(codigo.trim())) return objeto;
         return null;
     }
-    /** Obtiene el historial completo de un objeto, incluyendo su recepción inicial. */
+    /** Obtiene los traslados históricos del objeto; la ubicación inicial queda en su estado actual. */
     public ArrayList<MovimientoCustodia> consultarHistorial(String codigoObjeto) {
         ArrayList<MovimientoCustodia> historial = new ArrayList<MovimientoCustodia>();
-        for (MovimientoCustodia movimiento : movimientos) if (movimiento.getObjeto().getCodigo().equalsIgnoreCase(codigoObjeto)) historial.add(movimiento);
+        ObjetoEncontrado objeto = buscarObjeto(codigoObjeto);
+        if (objeto != null) historial.addAll(objeto.getMovimientos());
         return historial;
     }
     /** Revisa todas las condiciones del destino antes de modificar la custodia. */
     private void validarDestino(Ubicacion destino, String categoria) {
         if (!destino.isHabilitada()) throw new IllegalArgumentException("La ubicación está inhabilitada.");
-        if (destino.getEspaciosDisponibles() <= 0) throw new IllegalArgumentException("La ubicación no tiene espacios disponibles.");
+        if (!destino.tieneEspacio()) throw new IllegalArgumentException("La ubicación no tiene espacios disponibles.");
         if (!destino.admiteCategoria(categoria)) throw new IllegalArgumentException("La ubicación no admite la categoría " + categoria + ".");
     }
     /** Protege las operaciones administrativas para que solo las realice un encargado activo. */

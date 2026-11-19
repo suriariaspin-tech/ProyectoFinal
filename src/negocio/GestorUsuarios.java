@@ -21,13 +21,13 @@ public class GestorUsuarios {
     /** Registra una cuenta pública y siempre le asigna el rol MIEMBRO. */
     public Usuario registrarUsuario(String nombres, String identificador, String correo, String telefono, String contrasena) {
         validarObligatorio(nombres, "Los nombres y apellidos son obligatorios.");
-        validarObligatorio(identificador, "El identificador institucional es obligatorio.");
+        validarObligatorio(identificador, "El ID Banner es obligatorio.");
         validarObligatorio(correo, "El correo electrónico es obligatorio.");
         validarObligatorio(telefono, "El número de contacto es obligatorio.");
         validarObligatorio(contrasena, "La contraseña es obligatoria.");
         if (contrasena.length() < 8) throw new IllegalArgumentException("La contraseña debe tener al menos 8 caracteres.");
         if (buscarPorCorreo(correo) != null) throw new IllegalArgumentException("Ese correo electrónico ya está registrado.");
-        if (buscarPorIdentificador(identificador) != null) throw new IllegalArgumentException("Ese identificador institucional ya está registrado.");
+        if (buscarPorIdentificador(identificador) != null) throw new IllegalArgumentException("Ese ID Banner ya está registrado.");
         Usuario usuario = new Usuario("U-" + siguienteCodigo++, nombres.trim(), identificador.trim(),
                 correo.trim(), telefono.trim(), contrasena, "MIEMBRO", "ACTIVA");
         usuarios.add(usuario);
@@ -48,10 +48,10 @@ public class GestorUsuarios {
         return null;
     }
 
-    /** Busca una cuenta por su identificador institucional. */
+    /** Busca una cuenta por su ID Banner. */
     public Usuario buscarPorIdentificador(String identificador) {
         if (identificador == null) return null;
-        for (Usuario usuario : usuarios) if (usuario.getIdentificadorInstitucional().trim().equalsIgnoreCase(identificador.trim())) return usuario;
+        for (Usuario usuario : usuarios) if (usuario.getIdBanner().trim().equalsIgnoreCase(identificador.trim())) return usuario;
         return null;
     }
 

@@ -16,7 +16,7 @@ public class InterfazUsuarios {
     public void registrar() {
         try {
             String nombres = pedir("Nombres y apellidos:"); if (nombres == null) return;
-            String identificador = pedir("Identificador institucional:"); if (identificador == null) return;
+            String identificador = pedir("ID Banner:"); if (identificador == null) return;
             String correo = pedir("Correo electrónico:"); if (correo == null) return;
             String telefono = pedir("Número de contacto:"); if (telefono == null) return;
             String contrasena = pedir("Contraseña (mínimo 8 caracteres):"); if (contrasena == null) return;

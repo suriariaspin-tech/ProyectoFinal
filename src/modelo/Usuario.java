@@ -1,43 +1,56 @@
 package modelo;
 
+import java.util.ArrayList;
+
 /** Representa a un miembro de la comunidad o a un encargado autorizado. */
 public class Usuario {
-    /** Código interno único de la cuenta. */
-    private String codigo;
-    /** Nombres y apellidos de la persona. */
-    private String nombres;
-    /** Identificador académico o institucional, sin posibilidad de edición posterior. */
-    private String identificadorInstitucional;
-    /** Correo empleado para iniciar sesión; debe ser único. */
-    private String correo;
-    /** Número de contacto de la persona. */
-    private String telefono;
-    /** Contraseña de acceso de esta versión educativa en memoria. */
-    private String contrasena;
-    /** Permisos de la cuenta: MIEMBRO o ENCARGADO. */
-    private String rol;
-    /** Estado de la cuenta: ACTIVA o INACTIVA. */
-    private String estado;
+    private String idUsuario; //código interno único de la cuenta.
+    private String nombreCompleto; //Nombres y apellidos de la persona.
+    private String idBanner; //Identificador académico o institucional, sin posibilidad de edición posterior.
+    private String correo; //Correo empleado para iniciar sesión; debe ser único.
+    private String telefono; //Número de contacto de la persona.
+    private String contrasena; //Contraseña de acceso de esta versión educativa en memoria.
+    private String rol; //Permisos de la cuenta: MIEMBRO o ENCARGADO.
+    private String estadoCuenta; //Estado de la cuenta: ACTIVA o INACTIVA.
+    private ArrayList<ReportePerdida> reportesPerdida; //Reportes de pérdida cuyo propietario es esta cuenta.
+    private ArrayList<ReporteHallazgo> reportesHallazgo; //Reportes de hallazgo registrados por esta cuenta.
 
     /** Recibe e inicializa todos los datos de una cuenta. */
-    public Usuario(String codigo, String nombres, String identificadorInstitucional, String correo,
+    public Usuario(String codigo, String nombres, String idBanner, String correo,
                    String telefono, String contrasena, String rol, String estado) {
-        this.codigo = codigo;
-        this.nombres = nombres;
-        this.identificadorInstitucional = identificadorInstitucional;
+        this.idUsuario = codigo;
+        this.nombreCompleto = nombres;
+        this.idBanner = idBanner;
         this.correo = correo;
         this.telefono = telefono;
         this.contrasena = contrasena;
         this.rol = rol;
-        this.estado = estado;
+        this.estadoCuenta = estado;
+        this.reportesPerdida = new ArrayList<ReportePerdida>();
+        this.reportesHallazgo = new ArrayList<ReporteHallazgo>();
     }
 
-    public String getCodigo() { return codigo; }
-    public void setCodigo(String codigo) { this.codigo = codigo; }
-    public String getNombres() { return nombres; }
-    public void setNombres(String nombres) { this.nombres = nombres; }
-    public String getIdentificadorInstitucional() { return identificadorInstitucional; }
-    public void setIdentificadorInstitucional(String identificadorInstitucional) { this.identificadorInstitucional = identificadorInstitucional; }
+    /** Agrega el mismo reporte de pérdida a la colección relacionada con su propietario. */
+    public void agregarReportePerdida(ReportePerdida reporte) { reportesPerdida.add(reporte); }
+
+    /** Agrega el mismo hallazgo a la colección relacionada con su reportante. */
+    public void agregarReporteHallazgo(ReporteHallazgo reporte) { reportesHallazgo.add(reporte); }
+    public ArrayList<ReportePerdida> getReportesPerdida() { return reportesPerdida; }
+    public ArrayList<ReporteHallazgo> getReportesHallazgo() { return reportesHallazgo; }
+    public String getIdUsuario() { return idUsuario; }
+    public void setIdUsuario(String idUsuario) { this.idUsuario = idUsuario; }
+
+    /** Perfil conservado para las interfaces existentes. */
+    public String getCodigo() { return idUsuario; }
+    public void setCodigo(String codigo) { this.idUsuario = codigo; }
+    public String getNombreCompleto() { return nombreCompleto; }
+    public void setNombreCompleto(String nombreCompleto) { this.nombreCompleto = nombreCompleto; }
+
+    /** Perfil conservado para las interfaces existentes. */
+    public String getNombres() { return nombreCompleto; }
+    public void setNombres(String nombres) { this.nombreCompleto = nombres; }
+    public String getIdBanner() { return idBanner; }
+    public void setIdBanner(String idBanner) { this.idBanner = idBanner; }
     public String getCorreo() { return correo; }
     public void setCorreo(String correo) { this.correo = correo; }
     public String getTelefono() { return telefono; }
@@ -46,14 +59,18 @@ public class Usuario {
     public void setContrasena(String contrasena) { this.contrasena = contrasena; }
     public String getRol() { return rol; }
     public void setRol(String rol) { this.rol = rol; }
-    public String getEstado() { return estado; }
-    public void setEstado(String estado) { this.estado = estado; }
+    public String getEstadoCuenta() { return estadoCuenta; }
+    public void setEstadoCuenta(String estadoCuenta) { this.estadoCuenta = estadoCuenta; }
+
+    /** Perfil conservado para las interfaces existentes. */
+    public String getEstado() { return estadoCuenta; }
+    public void setEstado(String estado) { this.estadoCuenta = estado; }
 
     /** Devuelve los datos visibles del perfil sin exponer la contraseña. */
     @Override
     public String toString() {
-        return "Código: " + codigo + "\nNombre: " + nombres + "\nIdentificador: "
-                + identificadorInstitucional + "\nCorreo: " + correo + "\nContacto: "
-                + telefono + "\nRol: " + rol + "\nEstado: " + estado;
+        return "Código: " + idUsuario + "\nNombre: " + nombreCompleto + "\nIdentificador: "
+                + idBanner + "\nCorreo: " + correo + "\nContacto: "
+                + telefono + "\nRol: " + rol + "\nEstado: " + estadoCuenta;
     }
 }

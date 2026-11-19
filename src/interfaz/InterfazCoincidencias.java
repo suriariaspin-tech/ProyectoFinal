@@ -37,7 +37,8 @@ public class InterfazCoincidencias {
                     .append(" | ").append(hallazgo.getDescripcion()).append(" | Color: ").append(hallazgo.getColor())
                     .append(" | Marca: ").append(hallazgo.getMarca().isEmpty() ? "No informada" : hallazgo.getMarca())
                     .append(" | Fecha: ").append(hallazgo.getFechaHallazgo().format(formato)).append(" | Lugar: ").append(hallazgo.getLugar())
-                    .append(" | Puntaje: ").append(coincidencia.getPuntaje()).append(" | Estado: ").append(hallazgo.getEstado());
+                    .append(" | Puntaje: ").append((int) coincidencia.getPuntaje())
+                    .append(" | Estado de recepción: ").append(hallazgo.getEstadoRecepcion());
             if (hallazgo.getObjetoEncontrado() != null) texto.append(" | Ubicación actual: ").append(hallazgo.getObjetoEncontrado().getUbicacionActual().getNombre());
             else texto.append(" | Objeto todavía no recibido físicamente");
             texto.append("\n\n");

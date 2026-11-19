@@ -11,9 +11,11 @@ import java.util.Locale;
 public class GestorCoincidencias {
     /** Resultados de la última comparación completa. */
     private ArrayList<Coincidencia> coincidencias;
+    /** Secuencia usada para diferenciar los códigos de coincidencia. */
+    private int siguienteCodigo;
 
     /** Crea una colección vacía de resultados. */
-    public GestorCoincidencias() { coincidencias = new ArrayList<Coincidencia>(); }
+    public GestorCoincidencias() { coincidencias = new ArrayList<Coincidencia>(); siguienteCodigo = 1; }
 
     /** Vuelve a comparar todos los pares y ordena los resultados de mayor a menor puntaje. */
     public void recalcular(ArrayList<ReportePerdida> perdidas, ArrayList<ReporteHallazgo> hallazgos) {
@@ -21,7 +23,10 @@ public class GestorCoincidencias {
         for (ReportePerdida perdida : perdidas) {
             for (ReporteHallazgo hallazgo : hallazgos) {
                 int puntaje = calcularPuntaje(perdida, hallazgo);
-                if (puntaje >= 40) coincidencias.add(new Coincidencia(perdida, hallazgo, puntaje));
+                if (puntaje >= 40) {
+                    coincidencias.add(new Coincidencia("COI-" + siguienteCodigo++, perdida, hallazgo,
+                            puntaje, consultarCriterios(perdida, hallazgo)));
+                }
             }
         }
         ordenarPorPuntaje();
@@ -55,6 +60,14 @@ public class GestorCoincidencias {
     }
     /** Elimina espacios externos y diferencias entre mayúsculas y minúsculas. */
     private String normalizar(String texto) { return texto == null ? "" : texto.trim().toLowerCase(Locale.ROOT); }
+    /** Describe los datos que aportaron puntos al resultado. */
+    private String consultarCriterios(ReportePerdida perdida, ReporteHallazgo hallazgo) {
+        StringBuilder criterios = new StringBuilder();
+        if (coincideDato(perdida.getMarca(), hallazgo.getMarca())) criterios.append("marca, ");
+        if (coincideDato(perdida.getColor(), hallazgo.getColor())) criterios.append("color, ");
+        if (coincideDato(perdida.getLugar(), hallazgo.getLugar())) criterios.append("lugar, ");
+        return criterios.length() == 0 ? "categoría" : "categoría, " + criterios.substring(0, criterios.length() - 2);
+    }
     /** Ordena resultados sin usar características posteriores a Java 8. */
     private void ordenarPorPuntaje() {
         for (int i = 0; i < coincidencias.size(); i++) {

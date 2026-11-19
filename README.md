@@ -42,6 +42,7 @@ ProyectoFinal/
     │   ├── Coincidencia.java
     │   ├── MovimientoCustodia.java
     │   ├── ObjetoEncontrado.java
+    │   ├── Reporte.java
     │   ├── ReporteHallazgo.java
     │   ├── ReportePerdida.java
     │   ├── Ubicacion.java
@@ -56,7 +57,7 @@ ProyectoFinal/
 
 ### Responsabilidad de las clases
 
-**modelo:** `Usuario` conserva perfil, credenciales, rol y estado; `ReportePerdida` y `ReporteHallazgo` representan avisos separados; `ObjetoEncontrado` representa el objeto recibido físicamente; `Ubicacion` registra capacidad, categorías admitidas y ocupación; `MovimientoCustodia` conserva cada recepción o traslado; `Coincidencia` relaciona dos reportes y su puntaje.
+**modelo:** `Usuario` conserva perfil, credenciales, rol, estado y sus colecciones de reportes; `Reporte` reúne los datos comunes y es la superclase abstracta de `ReportePerdida` y `ReporteHallazgo`; esas clases añaden respectivamente la fecha/lugar de pérdida y la fecha/lugar/estado de recepción del hallazgo. `ObjetoEncontrado` representa el objeto recibido físicamente; `Ubicacion` registra capacidad, categorías admitidas, ocupación y objetos; `MovimientoCustodia` conserva los traslados entre ubicaciones; `Coincidencia` relaciona reportes de pérdida y hallazgo y explica su puntaje.
 
 **negocio:** `GestorUsuarios` valida registro, inicio de sesión y perfil; `GestorReportesPerdida` administra las pérdidas; `GestorReportesHallazgo` administra avisos de hallazgo que permanecen pendientes hasta ser recibidos; `GestorCoincidencias` aplica las reglas de puntuación y ordenamiento; `GestorCustodia` administra ubicaciones, recepciones, capacidad y movimientos históricos.
 
@@ -75,5 +76,6 @@ ProyectoFinal/
 - La contraseña de demostración y las contraseñas registradas se conservan en memoria sin cifrado; esto es solo para una práctica académica, no para producción.
 - Las capacidades iniciales de demostración (30 objetos por ubicación) están centralizadas en `GestorCustodia` y no representan capacidades oficiales de la UDLA.
 - Las categorías iniciales admitidas son Accesorios, Electrónica, Ropa, Documentos y Otros.
-- La fotografía es opcional y se almacena como una referencia/ruta de texto; no se carga ni almacena el archivo de imagen.
+- La fotografía es opcional y se almacena como una referencia/ruta de texto; no se carga ni almacena el archivo de imagen. El diagrama UML no muestra ese atributo, por lo que se conserva como dato opcional común en `Reporte` para cumplir el requisito funcional previo.
+- El historial registra los traslados entre ubicaciones; la recepción inicial establece la ubicación actual, pero no se registra como traslado porque no tiene una ubicación de origen del campus.
 - No se implementa el módulo de reclamos, verificación de propiedad ni devolución.

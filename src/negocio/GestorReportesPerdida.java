@@ -25,6 +25,7 @@ public class GestorReportesPerdida {
                 limpiarOpcional(marca), color.trim(), descripcion.trim(), limpiarOpcional(caracteristicas),
                 fecha, lugar.trim(), limpiarOpcional(fotografia), "ABIERTO");
         reportes.add(reporte);
+        propietario.agregarReportePerdida(reporte);
         return reporte;
     }
 

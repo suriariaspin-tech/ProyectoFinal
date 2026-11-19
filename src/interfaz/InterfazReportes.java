@@ -81,7 +81,7 @@ public class InterfazReportes {
     public void consultarYEditarHallazgos(Usuario usuario) {
         ArrayList<ReporteHallazgo> lista = gestorHallazgos.getReportes();
         StringBuilder texto = new StringBuilder();
-        for (ReporteHallazgo reporte : lista) if (reporte.getUsuarioReportante() == usuario) texto.append(resumen(reporte)).append(" Estado: ").append(reporte.getEstado()).append("\n");
+        for (ReporteHallazgo reporte : lista) if (reporte.getUsuarioReportante() == usuario) texto.append(resumen(reporte)).append(" Estado de recepción: ").append(reporte.getEstadoRecepcion()).append("\n");
         if (texto.length() == 0) { JOptionPane.showMessageDialog(null, "No tiene reportes de hallazgo."); return; }
         JOptionPane.showMessageDialog(null, texto.toString(), "Mis reportes de hallazgo", JOptionPane.INFORMATION_MESSAGE);
         String codigo = JOptionPane.showInputDialog(null, "Código de hallazgo pendiente que desea editar (Cancelar para volver):");
@@ -96,7 +96,7 @@ public class InterfazReportes {
     /** Presenta todos los reportes para que el encargado encuentre hallazgos pendientes. */
     public void consultarTodos() {
         StringBuilder texto = new StringBuilder("REPORTES DE HALLAZGO\n");
-        for (ReporteHallazgo reporte : gestorHallazgos.getReportes()) texto.append(resumen(reporte)).append(" Estado: ").append(reporte.getEstado()).append("\n");
+        for (ReporteHallazgo reporte : gestorHallazgos.getReportes()) texto.append(resumen(reporte)).append(" Estado de recepción: ").append(reporte.getEstadoRecepcion()).append("\n");
         texto.append("\nREPORTES DE PÉRDIDA\n");
         for (ReportePerdida reporte : gestorPerdidas.getReportes()) texto.append(resumen(reporte)).append(" Estado: ").append(reporte.getEstado()).append("\n");
         if (gestorHallazgos.getReportes().isEmpty() && gestorPerdidas.getReportes().isEmpty()) texto.append("No hay reportes registrados.");

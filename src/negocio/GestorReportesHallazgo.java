@@ -25,6 +25,7 @@ public class GestorReportesHallazgo {
                 limpiarOpcional(marca), color.trim(), descripcion.trim(), limpiarOpcional(caracteristicas),
                 fecha, lugar.trim(), limpiarOpcional(fotografia), "PENDIENTE_RECEPCION");
         reportes.add(reporte);
+        reportante.agregarReporteHallazgo(reporte);
         return reporte;
     }
 
