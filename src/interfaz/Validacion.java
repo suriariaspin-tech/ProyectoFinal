@@ -7,9 +7,9 @@ import java.util.Scanner;
 
 /** Centraliza la lectura por consola para que toda la aplicación comparta un Scanner. */
 public class Validacion {
-    /** Único Scanner del programa, conectado a la entrada de teclado. */
+    //Único Scanner del programa, conectado a la entrada de teclado.
     private static final Scanner ENTRADA = new Scanner(System.in);
-    /** Formato simple para escribir fechas y horas: año-mes-día hora:minuto. */
+    //Formato simple para escribir fechas y horas: año-mes-día hora:minuto.
     private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     /** Evita crear objetos de lectura, ya que las operaciones son compartidas. */

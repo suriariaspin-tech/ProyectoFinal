@@ -12,12 +12,9 @@ import java.util.ArrayList;
 
 /** Lee y presenta por consola reportes de pérdida y reportes de hallazgo por separado. */
 public class InterfazReportes {
-    /** Gestor compartido de los reportes de pérdida. */
-    private GestorReportesPerdida gestorPerdidas;
-    /** Gestor compartido de los reportes de hallazgo. */
-    private GestorReportesHallazgo gestorHallazgos;
-    /** Gestor compartido para mostrar estado de posibles coincidencias. */
-    private GestorCoincidencias gestorCoincidencias;
+    private GestorReportesPerdida gestorPerdidas; //Gestor compartido de los reportes de pérdida.
+    private GestorReportesHallazgo gestorHallazgos; //Gestor compartido de los reportes de hallazgo.
+    private GestorCoincidencias gestorCoincidencias; //Gestor compartido para mostrar estado de posibles coincidencias.
 
     /** Recibe los gestores compartidos de reportes y coincidencias. */
     public InterfazReportes(GestorReportesPerdida perdidas, GestorReportesHallazgo hallazgos,

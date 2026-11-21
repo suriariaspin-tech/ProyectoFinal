@@ -10,10 +10,8 @@ import java.util.ArrayList;
 
 /** Lee y presenta las operaciones de recepción y custodia en la consola. */
 public class InterfazCustodia {
-    /** Gestor compartido que mantiene ubicaciones, objetos e historial. */
-    private GestorCustodia gestorCustodia;
-    /** Gestor compartido que contiene los reportes pendientes de recepción. */
-    private GestorReportesHallazgo gestorHallazgos;
+    private GestorCustodia gestorCustodia; //Gestor compartido que mantiene ubicaciones, objetos e historial.
+    private GestorReportesHallazgo gestorHallazgos; //Gestor compartido que contiene los reportes pendientes de recepción.
 
     /** Recibe los gestores de custodia y hallazgos de la misma sesión. */
     public InterfazCustodia(GestorCustodia custodia, GestorReportesHallazgo hallazgos) {

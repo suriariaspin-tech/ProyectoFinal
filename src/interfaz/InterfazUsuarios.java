@@ -5,8 +5,7 @@ import negocio.GestorUsuarios;
 
 /** Atiende por consola el registro, el inicio de sesión y el perfil de las personas. */
 public class InterfazUsuarios {
-    /** Gestor compartido que verifica y conserva las cuentas. */
-    private GestorUsuarios gestor;
+    private GestorUsuarios gestor; //Gestor compartido que verifica y conserva las cuentas.
 
     /** Recibe el gestor de usuarios que se conserva durante toda la ejecución. */
     public InterfazUsuarios(GestorUsuarios gestor) { this.gestor = gestor; }

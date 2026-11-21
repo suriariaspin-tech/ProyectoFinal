@@ -8,11 +8,9 @@ import negocio.GestorReportesPerdida;
 
 /** Presenta las operaciones administrativas disponibles para un encargado activo. */
 public class MenuEncargado {
-    /** Encargado autenticado y responsable de las operaciones de custodia. */
-    private Usuario encargado;
-    /** Interfaces de consola conectadas a los gestores compartidos. */
-    private InterfazCustodia interfazCustodia;
-    private InterfazReportes interfazReportes;
+    private Usuario encargado; //Encargado autenticado y responsable de las operaciones de custodia.
+    private InterfazCustodia interfazCustodia; //Interfaces de consola conectadas a los gestores compartidos.
+    private InterfazReportes interfazReportes; //Interfaces de consola conectadas a los gestores compartidos.
 
     /** Recibe el encargado y los gestores de la misma sesión de aplicación. */
     public MenuEncargado(Usuario encargado, GestorReportesHallazgo hallazgos,

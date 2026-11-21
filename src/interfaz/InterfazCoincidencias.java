@@ -10,16 +10,13 @@ import java.util.ArrayList;
 
 /** Calcula y muestra por consola posibles coincidencias sin confirmar propiedad. */
 public class InterfazCoincidencias {
-    /** Gestor compartido para comparar y ordenar reportes. */
-    private GestorCoincidencias gestorCoincidencias;
-    /** Reportes de pérdida que se comparan. */
-    private GestorReportesPerdida gestorPerdidas;
-    /** Reportes de hallazgo que se comparan. */
-    private GestorReportesHallazgo gestorHallazgos;
+    private GestorCoincidencias gestorCoincidencias; //Gestor compartido para comparar y ordenar reportes.
+    private GestorReportesPerdida gestorPerdidas; //Reportes de pérdida que se comparan
+    private GestorReportesHallazgo gestorHallazgos; //Reportes de hallazgo que se comparan.
 
     /** Recibe los tres gestores que comparten los datos de la ejecución. */
-    public InterfazCoincidencias(GestorCoincidencias coincidencias,
-                                 GestorReportesPerdida perdidas, GestorReportesHallazgo hallazgos) {
+    public InterfazCoincidencias(GestorCoincidencias coincidencias, GestorReportesPerdida perdidas,
+                                 GestorReportesHallazgo hallazgos) {
         gestorCoincidencias = coincidencias;
         gestorPerdidas = perdidas;
         gestorHallazgos = hallazgos;

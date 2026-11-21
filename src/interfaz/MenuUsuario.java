@@ -8,12 +8,10 @@ import negocio.GestorUsuarios;
 
 /** Presenta las opciones permitidas a un usuario con rol MIEMBRO. */
 public class MenuUsuario {
-    /** Usuario autenticado durante este menú. */
-    private Usuario usuario;
-    /** Interfaces de consola conectadas a los gestores compartidos. */
-    private InterfazUsuarios interfazUsuarios;
-    private InterfazReportes interfazReportes;
-    private InterfazCoincidencias interfazCoincidencias;
+    private Usuario usuario; //Usuario autenticado durante este menú.
+    private InterfazUsuarios interfazUsuarios; //Interfaces de consola conectadas a los gestores compartidos.
+    private InterfazReportes interfazReportes; //Interfaces de consola conectadas a los gestores compartidos.
+    private InterfazCoincidencias interfazCoincidencias; //Interfaces de consola conectadas a los gestores compartidos.
 
     /** Recibe el usuario y los gestores que continúan activos durante toda la sesión. */
     public MenuUsuario(Usuario usuario, GestorUsuarios usuarios, GestorReportesPerdida perdidas,

@@ -9,16 +9,11 @@ import negocio.GestorUsuarios;
 
 /** Crea los gestores compartidos y controla el menú inicial de Reencuentra. */
 public class VentanaPrincipal {
-    /** Gestor único de cuentas para toda la ejecución. */
-    private GestorUsuarios gestorUsuarios;
-    /** Gestor único de pérdidas para toda la ejecución. */
-    private GestorReportesPerdida gestorPerdidas;
-    /** Gestor único de hallazgos para toda la ejecución. */
-    private GestorReportesHallazgo gestorHallazgos;
-    /** Gestor único de coincidencias para toda la ejecución. */
-    private GestorCoincidencias gestorCoincidencias;
-    /** Gestor único de ubicaciones, objetos y movimientos para toda la ejecución. */
-    private GestorCustodia gestorCustodia;
+    private GestorUsuarios gestorUsuarios; //Gestor único de cuentas para toda la ejecución.
+    private GestorReportesPerdida gestorPerdidas; //Gestor único de pérdidas para toda la ejecución.
+    private GestorReportesHallazgo gestorHallazgos; //Gestor único de hallazgos para toda la ejecución.
+    private GestorCoincidencias gestorCoincidencias; //Gestor único de coincidencias para toda la ejecución.
+    private GestorCustodia gestorCustodia; //Gestor único de ubicaciones, objetos y movimientos para toda la ejecución.
 
     /** Inicializa una sola instancia de cada gestor para compartir las colecciones. */
     public VentanaPrincipal() {
