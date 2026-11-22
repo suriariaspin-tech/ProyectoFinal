@@ -7,12 +7,9 @@ import java.util.ArrayList;
 
 /** Registra, edita y busca reportes de objetos perdidos. */
 public class GestorReportesPerdida {
-    /** Reportes de pérdida guardados durante esta ejecución. */
-    private ArrayList<ReportePerdida> reportes;
-    /** Próximo número para asignar códigos únicos. */
-    private int siguienteCodigo;
-    /** Explicación de la última operación rechazada. */
-    private String mensajeError;
+    private ArrayList<ReportePerdida> reportes; //Reportes de pérdida guardados durante esta ejecución.
+    private int siguienteCodigo; //Próximo número para asignar códigos únicos.
+    private String mensajeError; //Explicación de la última operación rechazada.
 
     /** Crea una colección vacía de reportes. */
     public GestorReportesPerdida() {
@@ -89,15 +86,19 @@ public class GestorReportesPerdida {
         return "";
     }
 
-    /** Comprueba si falta un dato de texto obligatorio. */
-    private boolean vacio(String texto) { return texto == null || texto.trim().isEmpty(); }
-    /** Convierte un campo opcional nulo en texto vacío. */
-    private String limpiarOpcional(String texto) {
+    private boolean vacio(String texto){ //Comprueba si falta un dato de texto obligatorio.
+        return texto == null || texto.trim().isEmpty();
+    }
+
+    private String limpiarOpcional(String texto){ //Convierte un campo opcional nulo en texto vacío.
         if (texto == null) return "";
         return texto.trim();
     }
-    /** Devuelve el mensaje de la última operación rechazada. */
-    public String getMensajeError() { return mensajeError; }
+
+    public String getMensajeError(){ //Devuelve el mensaje de la última operación rechazada.
+        return mensajeError;
+    }
+
     /** Devuelve todos los reportes de pérdida de la sesión. */
     /** Devuelve una copia de la lista de pérdidas conservando las mismas entidades. */
     public ArrayList<ReportePerdida> getReportes() { return new ArrayList<ReportePerdida>(reportes); }

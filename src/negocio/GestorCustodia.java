@@ -10,16 +10,12 @@ import java.util.ArrayList;
 
 /** Registra recepciones y traslados físicos, y conserva las ubicaciones e historiales. */
 public class GestorCustodia {
-    /** Tres ubicaciones físicas configuradas para el campus. */
-    private ArrayList<Ubicacion> ubicaciones;
-    /** Objetos que sí se recibieron físicamente. */
-    private ArrayList<ObjetoEncontrado> objetos;
-    /** Historial general de las recepciones iniciales y los traslados realizados. */
-    private ArrayList<MovimientoCustodia> movimientos;
-    /** Próximo número para asignar un código de movimiento. */
-    private int siguienteMovimiento;
-    /** Explicación de la última operación rechazada. */
-    private String mensajeError;
+    private ArrayList<Ubicacion> ubicaciones; //Tres ubicaciones físicas configuradas para el campus.
+    private ArrayList<ObjetoEncontrado> objetos; //Objetos que sí se recibieron físicamente.
+    private ArrayList<MovimientoCustodia> movimientos; //Historial general de las recepciones iniciales y los
+    // traslados realizados.
+    private int siguienteMovimiento; //Próximo número para asignar un código de movimiento.
+    private String mensajeError; //Explicación de la última operación rechazada.
 
     /** Capacidades de demostración ajustables; no representan límites oficiales de la UDLA. */
     public static final int CAPACIDAD_DEMO_GARITA = 30;
@@ -147,12 +143,13 @@ public class GestorCustodia {
         return usuario != null && usuario.getRol().equals("ENCARGADO")
                 && usuario.getEstadoCuenta().equals("ACTIVA");
     }
-    /** Devuelve el motivo de la última operación de custodia rechazada. */
-    public String getMensajeError() { return mensajeError; }
-    /** Devuelve las ubicaciones disponibles en la sesión. */
-    public ArrayList<Ubicacion> getUbicaciones() { return new ArrayList<Ubicacion>(ubicaciones); }
-    /** Devuelve los objetos recibidos en la sesión. */
-    public ArrayList<ObjetoEncontrado> getObjetos() { return new ArrayList<ObjetoEncontrado>(objetos); }
-    /** Devuelve los movimientos hechos durante la sesión. */
-    public ArrayList<MovimientoCustodia> getMovimientos() { return new ArrayList<MovimientoCustodia>(movimientos); }
+
+    public String getMensajeError(){
+        return mensajeError; } //Devuelve el motivo de la última operación de custodia rechazada.
+    public ArrayList<Ubicacion> getUbicaciones(){
+        return new ArrayList<Ubicacion>(ubicaciones); } //Devuelve las ubicaciones disponibles en la sesión.
+    public ArrayList<ObjetoEncontrado> getObjetos(){
+        return new ArrayList<ObjetoEncontrado>(objetos); } //Devuelve los objetos recibidos en la sesión.
+    public ArrayList<MovimientoCustodia> getMovimientos(){
+        return new ArrayList<MovimientoCustodia>(movimientos); } //Devuelve los movimientos hechos durante la sesión.
 }

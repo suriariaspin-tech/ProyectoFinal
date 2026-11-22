@@ -7,12 +7,9 @@ import java.util.ArrayList;
 
 /** Registra y administra los avisos de objetos encontrados, estén recibidos o no. */
 public class GestorReportesHallazgo {
-    /** Reportes de hallazgo que se mantienen separados de los objetos físicos. */
-    private ArrayList<ReporteHallazgo> reportes;
-    /** Próximo número para asignar códigos únicos. */
-    private int siguienteCodigo;
-    /** Explicación de la última operación rechazada. */
-    private String mensajeError;
+    private ArrayList<ReporteHallazgo> reportes; //Reportes de hallazgo que se mantienen separados de los objetos físicos.
+    private int siguienteCodigo; //Próximo número para asignar códigos únicos.
+    private String mensajeError; //Explicación de la última operación rechazada.
 
     /** Crea una colección vacía de reportes de hallazgo. */
     public GestorReportesHallazgo() {
@@ -80,16 +77,21 @@ public class GestorReportesHallazgo {
         return "";
     }
 
-    /** Comprueba si falta un dato de texto obligatorio. */
-    private boolean vacio(String texto) { return texto == null || texto.trim().isEmpty(); }
-    /** Convierte un campo opcional nulo en texto vacío. */
-    private String limpiarOpcional(String texto) {
+    private boolean vacio(String texto){ //Comprueba si falta un dato de texto obligatorio.
+        return texto == null || texto.trim().isEmpty();
+    }
+    private String limpiarOpcional(String texto){ //Convierte un campo opcional nulo en texto vacío.
         if (texto == null) return "";
         return texto.trim();
     }
-    /** Devuelve el mensaje de la última operación rechazada. */
-    public String getMensajeError() { return mensajeError; }
+
+    public String getMensajeError(){ //Devuelve el mensaje de la última operación rechazada.
+        return mensajeError;
+    }
+
     /** Devuelve todos los avisos de hallazgo de la sesión. */
     /** Devuelve una copia de la lista de hallazgos conservando las mismas entidades. */
-    public ArrayList<ReporteHallazgo> getReportes() { return new ArrayList<ReporteHallazgo>(reportes); }
+    public ArrayList<ReporteHallazgo> getReportes(){
+        return new ArrayList<ReporteHallazgo>(reportes);
+    }
 }

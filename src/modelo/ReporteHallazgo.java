@@ -4,16 +4,11 @@ import java.time.LocalDateTime;
 
 /** Reporte de un objeto encontrado; la recepción física se registra en un paso separado. */
 public class ReporteHallazgo extends Reporte {
-    /** Usuario que comunicó el hallazgo. */
-    private Usuario usuarioReportante;
-    /** Fecha y hora en que fue encontrado el objeto. */
-    private LocalDateTime fechaHoraHallazgo;
-    /** Lugar donde se encontró el objeto. */
-    private String lugarHallazgo;
-    /** Estado de recepción, independiente del estado general heredado del reporte. */
-    private String estadoRecepcion;
-    /** Objeto físico relacionado al confirmar su recepción; nulo antes de ese momento. */
-    private ObjetoEncontrado objetoEncontrado;
+    private Usuario usuarioReportante; //Usuario que comunicó el hallazgo.
+    private LocalDateTime fechaHoraHallazgo; //Fecha y hora en que fue encontrado el objeto.
+    private String lugarHallazgo; //Lugar donde se encontró el objeto.
+    private String estadoRecepcion; //Estado de recepción, independiente del estado general heredado del reporte.
+    private ObjetoEncontrado objetoEncontrado; //Objeto físico relacionado al confirmar su recepción; nulo antes de ese momento.
 
     /** Inicializa los datos comunes y mantiene el estado de recepción separado del reporte. */
     public ReporteHallazgo(String codigo, Usuario usuarioReportante, String categoria, String marca,

@@ -5,12 +5,9 @@ import java.util.ArrayList;
 
 /** Registra cuentas, verifica sesiones y edita los datos personales permitidos. */
 public class GestorUsuarios {
-    /** Cuentas disponibles durante la ejecución. */
-    private ArrayList<Usuario> usuarios;
-    /** Próximo número para construir un código interno. */
-    private int siguienteCodigo;
-    /** Explicación de la última operación rechazada. */
-    private String mensajeError;
+    private ArrayList<Usuario> usuarios; //Cuentas disponibles durante la ejecución.
+    private int siguienteCodigo; //Próximo número para construir un código interno.
+    private String mensajeError; //Explicación de la última operación rechazada.
 
     /** Crea la colección y una cuenta ficticia de encargado para pruebas académicas. */
     public GestorUsuarios() {
@@ -85,10 +82,12 @@ public class GestorUsuarios {
         return true;
     }
 
-    /** Indica si un campo no se ingresó o solo contiene espacios. */
-    private boolean vacio(String texto) { return texto == null || texto.trim().isEmpty(); }
-    /** Devuelve la explicación de la última validación fallida. */
-    public String getMensajeError() { return mensajeError; }
+    private boolean vacio(String texto){ //Indica si un campo no se ingresó o solo contiene espacios.
+        return texto == null || texto.trim().isEmpty(); }
+
+    public String getMensajeError(){ //Devuelve la explicación de la última validación fallida.
+        return mensajeError; }
+
     /** Devuelve las cuentas de la sesión actual. */
     /** Devuelve una copia de las cuentas, sin exponer la colección interna del gestor. */
     public ArrayList<Usuario> getUsuarios() { return new ArrayList<Usuario>(usuarios); }

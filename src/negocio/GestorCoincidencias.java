@@ -8,11 +8,10 @@ import java.util.ArrayList;
 
 /** Compara reportes para mostrar posibles similitudes, sin decidir quién es dueño de un objeto. */
 public class GestorCoincidencias {
-    /** Coincidencias calculadas más recientemente. */
-    private ArrayList<Coincidencia> coincidencias;
+    private ArrayList<Coincidencia> coincidencias; //Coincidencias calculadas más recientemente.
 
-    /** Inicializa la lista de resultados de comparación. */
-    public GestorCoincidencias() { coincidencias = new ArrayList<Coincidencia>(); }
+    public GestorCoincidencias(){
+        coincidencias = new ArrayList<Coincidencia>(); } //Inicializa la lista de resultados de comparación.
 
     /** Compara cada pérdida con cada hallazgo y guarda resultados de 40 puntos o más en orden descendente. */
     public void recalcular(ArrayList<ReportePerdida> perdidas, ArrayList<ReporteHallazgo> hallazgos) {
@@ -90,5 +89,6 @@ public class GestorCoincidencias {
 
     /** Devuelve los resultados generados en el último cálculo. */
     /** Devuelve una copia de las coincidencias creadas en el último cálculo. */
-    public ArrayList<Coincidencia> getCoincidencias() { return new ArrayList<Coincidencia>(coincidencias); }
+    public ArrayList<Coincidencia> getCoincidencias(){
+        return new ArrayList<Coincidencia>(coincidencias); }
 }
