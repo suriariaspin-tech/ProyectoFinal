@@ -56,7 +56,7 @@ public class GestorCustodia {
         else if (!destino.admiteCategoria(reporte.getCategoria())) mensajeError = "La ubicación no admite esa categoría.";
         if (!mensajeError.isEmpty()) return null;
 
-        ObjetoEncontrado objeto = new ObjetoEncontrado(reporte.getCodigo(), reporte, destino, "EN_CUSTODIA");
+        ObjetoEncontrado objeto = new ObjetoEncontrado(reporte.getCodigo(), reporte, null, "EN_CUSTODIA");
         if (!destino.registrarEntrada(objeto)) {
             mensajeError = "No se pudo agregar el objeto a la ubicación.";
             return null;
@@ -80,8 +80,10 @@ public class GestorCustodia {
         if (!esEncargado(encargado)) mensajeError = "Solo un encargado activo puede realizar traslados.";
         else if (motivo == null || motivo.trim().isEmpty()) mensajeError = "El motivo del traslado es obligatorio.";
         else if (objeto == null) mensajeError = "No existe un objeto recibido con ese código.";
-        else if (!objeto.getEstadoCustodia().equals("EN_CUSTODIA")) mensajeError = "El objeto no está bajo custodia.";
+        else if (!"EN_CUSTODIA".equals(objeto.getEstadoCustodia())) mensajeError = "El objeto no está bajo custodia.";
         else if (destino == null) mensajeError = "La ubicación de destino no existe.";
+        else if (objeto.getReporteHallazgo() == null) mensajeError = "El objeto no tiene un reporte de hallazgo válido.";
+        else if (objeto.getUbicacionActual() == null) mensajeError = "El objeto no tiene una ubicación de origen válida.";
         else if (objeto.getUbicacionActual() == destino) mensajeError = "El destino debe ser diferente de la ubicación actual.";
         else if (!destino.isHabilitada()) mensajeError = "La ubicación de destino está inhabilitada.";
         else if (!destino.tieneEspacio()) mensajeError = "La ubicación de destino no tiene espacios disponibles.";
@@ -98,12 +100,10 @@ public class GestorCustodia {
         }
         if (!destino.registrarEntrada(objeto)) {
             // Si el destino rechaza la entrada, se restaura la salida para no dejar cambios parciales.
-            objeto.actualizarUbicacion(origen);
             origen.registrarEntrada(objeto);
             mensajeError = "No se pudo agregar el objeto al destino; se restauró la ubicación de origen.";
             return false;
         }
-        objeto.actualizarUbicacion(destino);
         MovimientoCustodia movimiento = new MovimientoCustodia("MOV-" + siguienteMovimiento, objeto,
                 origen, destino, LocalDateTime.now(), motivo.trim(), "", encargado);
         siguienteMovimiento++;
@@ -140,8 +140,8 @@ public class GestorCustodia {
 
     /** Comprueba que la cuenta tenga el rol y estado correctos para una operación de custodia. */
     private boolean esEncargado(Usuario usuario) {
-        return usuario != null && usuario.getRol().equals("ENCARGADO")
-                && usuario.getEstadoCuenta().equals("ACTIVA");
+        return usuario != null && "ENCARGADO".equals(usuario.getRol())
+                && "ACTIVA".equals(usuario.getEstadoCuenta());
     }
 
     public String getMensajeError(){

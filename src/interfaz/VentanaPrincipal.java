@@ -53,14 +53,17 @@ public class VentanaPrincipal {
 
     /** Dirige a la cuenta autenticada al menú permitido por su rol. */
     private void abrirMenu(Usuario usuario) {
-        if (usuario.getRol().equals("ENCARGADO")) {
+        if (usuario == null) return;
+        if ("ENCARGADO".equals(usuario.getRol())) {
             MenuEncargado menu = new MenuEncargado(usuario, gestorHallazgos, gestorCustodia,
                     gestorPerdidas, gestorCoincidencias);
             menu.mostrar();
-        } else {
+        } else if ("MIEMBRO".equals(usuario.getRol())) {
             MenuUsuario menu = new MenuUsuario(usuario, gestorUsuarios, gestorPerdidas,
                     gestorHallazgos, gestorCoincidencias);
             menu.mostrar();
+        } else {
+            System.out.println("La cuenta tiene un rol no válido y no puede acceder a un menú.");
         }
     }
 }

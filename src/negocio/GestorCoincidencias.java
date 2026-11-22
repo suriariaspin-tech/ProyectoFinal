@@ -34,6 +34,7 @@ public class GestorCoincidencias {
     /** Devuelve un puntaje entre 0 y 100; la categoría y el orden de fechas son requisitos. */
     public int calcularPuntaje(ReportePerdida perdida, ReporteHallazgo hallazgo) {
         if (perdida == null || hallazgo == null) return 0;
+        if (perdida.getFechaHoraPerdida() == null || hallazgo.getFechaHoraHallazgo() == null) return 0;
         if (!iguales(perdida.getCategoria(), hallazgo.getCategoria())) return 0;
         if (hallazgo.getFechaHoraHallazgo().isBefore(perdida.getFechaHoraPerdida())) return 0;
         int puntaje = 0;

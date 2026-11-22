@@ -24,8 +24,9 @@ public class GestorReportesPerdida {
                                     String lugar, String fotografia) {
         mensajeError = validar(propietario, categoria, color, descripcion, fecha, lugar);
         if (!mensajeError.isEmpty()) return null;
+        String categoriaNormalizada = normalizarCategoria(categoria);
         ReportePerdida reporte = new ReportePerdida("PER-" + siguienteCodigo, propietario,
-                categoria.trim(), limpiarOpcional(marca), color.trim(), descripcion.trim(),
+                categoriaNormalizada, limpiarOpcional(marca), color.trim(), descripcion.trim(),
                 limpiarOpcional(caracteristicas), fecha, lugar.trim(), limpiarOpcional(fotografia), "ABIERTO");
         siguienteCodigo++;
         reportes.add(reporte);
@@ -41,10 +42,10 @@ public class GestorReportesPerdida {
         mensajeError = "";
         if (reporte == null) mensajeError = "No existe el reporte indicado.";
         else if (reporte.getPropietario() != propietario) mensajeError = "El reporte no pertenece a esta cuenta.";
-        else if (!reporte.getEstado().equals("ABIERTO")) mensajeError = "No se puede editar un reporte cerrado.";
+        else if (!"ABIERTO".equals(reporte.getEstado())) mensajeError = "No se puede editar un reporte cerrado.";
         else mensajeError = validar(propietario, categoria, color, descripcion, fecha, lugar);
         if (!mensajeError.isEmpty()) return false;
-        reporte.setCategoria(categoria.trim());
+        reporte.setCategoria(normalizarCategoria(categoria));
         reporte.setMarca(limpiarOpcional(marca));
         reporte.setColor(color.trim());
         reporte.setDescripcion(descripcion.trim());
@@ -76,14 +77,29 @@ public class GestorReportesPerdida {
     /** Revisa los datos obligatorios y que la fecha del suceso no sea futura. */
     private String validar(Usuario propietario, String categoria, String color, String descripcion,
                            LocalDateTime fecha, String lugar) {
-        if (propietario == null) return "Debe iniciar sesión para registrar una pérdida.";
+        if (propietario == null || !"MIEMBRO".equals(propietario.getRol())
+                || !"ACTIVA".equals(propietario.getEstadoCuenta())) {
+            return "Solo un miembro activo puede registrar o editar una pérdida.";
+        }
         if (vacio(categoria)) return "La categoría es obligatoria.";
+        if (normalizarCategoria(categoria) == null) return "La categoría seleccionada no es válida.";
         if (vacio(color)) return "El color es obligatorio.";
         if (vacio(descripcion)) return "La descripción es obligatoria.";
         if (vacio(lugar)) return "El lugar donde se perdió es obligatorio.";
         if (fecha == null) return "La fecha de pérdida es obligatoria.";
         if (fecha.isAfter(LocalDateTime.now())) return "La fecha de pérdida no puede estar en el futuro.";
         return "";
+    }
+
+    /** Devuelve el nombre oficial de una categoría permitida o null si no existe. */
+    private String normalizarCategoria(String categoria) {
+        if (categoria == null) return null;
+        if (categoria.trim().equalsIgnoreCase("Accesorios")) return "Accesorios";
+        if (categoria.trim().equalsIgnoreCase("Electrónica")) return "Electrónica";
+        if (categoria.trim().equalsIgnoreCase("Ropa")) return "Ropa";
+        if (categoria.trim().equalsIgnoreCase("Documentos")) return "Documentos";
+        if (categoria.trim().equalsIgnoreCase("Otros")) return "Otros";
+        return null;
     }
 
     private boolean vacio(String texto){ //Comprueba si falta un dato de texto obligatorio.

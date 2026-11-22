@@ -62,6 +62,22 @@ public class Validacion {
         return opcion;
     }
 
+    /** Presenta las categorías permitidas y devuelve su nombre oficial. */
+    public static String seleccionarCategoria() {
+        System.out.println("Categorías:");
+        System.out.println("1. Accesorios");
+        System.out.println("2. Electrónica");
+        System.out.println("3. Ropa");
+        System.out.println("4. Documentos");
+        System.out.println("5. Otros");
+        int opcion = leerOpcion("Seleccione una categoría: ", 1, 5);
+        if (opcion == 1) return "Accesorios";
+        if (opcion == 2) return "Electrónica";
+        if (opcion == 3) return "Ropa";
+        if (opcion == 4) return "Documentos";
+        return "Otros";
+    }
+
     /** Lee un número decimal, validando que la persona escriba un valor numérico. */
     public static double leerNumero(String mensaje) {
         double numero = 0;

@@ -10,17 +10,30 @@ public class InterfazUsuarios {
     /** Recibe el gestor de usuarios que se conserva durante toda la ejecución. */
     public InterfazUsuarios(GestorUsuarios gestor) { this.gestor = gestor; }
 
-    /** Lee los datos de registro y crea un usuario MIEMBRO si todos son válidos. */
+    /** Permite elegir un rol y recoge los datos comunes del registro. */
     public void registrar() {
-        System.out.println("\n--- Registro de miembro ---");
+        System.out.println("\n--- Registro de cuenta ---");
+        System.out.println("1. Registrarse como miembro");
+        System.out.println("2. Registrarse como encargado");
+        int opcion = Validacion.leerOpcion("Seleccione el tipo de cuenta: ", 1, 2);
+        String rol;
+        if (opcion == 1) rol = "MIEMBRO";
+        else rol = "ENCARGADO";
+
         String nombre = Validacion.leerTextoObligatorio("Nombre completo: ");
         String idBanner = Validacion.leerTextoObligatorio("ID Banner: ");
         String correo = Validacion.leerTextoObligatorio("Correo electrónico: ");
         String telefono = Validacion.leerTextoObligatorio("Teléfono: ");
         String contrasena = Validacion.leerTextoObligatorio("Contraseña (mínimo 8 caracteres): ");
-        Usuario usuario = gestor.registrarUsuario(nombre, idBanner, correo, telefono, contrasena);
+        String codigoAutorizacion = "";
+        if (rol.equals("ENCARGADO")) {
+            codigoAutorizacion = Validacion.leerTextoObligatorio("Código de autorización: ");
+        }
+        Usuario usuario = gestor.registrarUsuario(nombre, idBanner, correo, telefono, contrasena,
+                rol, codigoAutorizacion);
         if (usuario == null) System.out.println("No se pudo registrar: " + gestor.getMensajeError());
-        else System.out.println("Registro completo. Código de usuario: " + usuario.getIdUsuario() + ". Rol: MIEMBRO.");
+        else System.out.println("Registro completo. Código de usuario: " + usuario.getIdUsuario()
+                + ". Rol: " + usuario.getRol() + ".");
     }
 
     /** Lee las credenciales e inicia sesión o devuelve null si no son válidas. */

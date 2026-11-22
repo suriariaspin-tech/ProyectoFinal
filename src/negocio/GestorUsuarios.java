@@ -5,6 +5,8 @@ import java.util.ArrayList;
 
 /** Registra cuentas, verifica sesiones y edita los datos personales permitidos. */
 public class GestorUsuarios {
+    // Código fijo solo para la demostración académica; no es un mecanismo de seguridad para producción.
+    private static final String CODIGO_AUTORIZACION_DEMO = "REENCUENTRA-ENC-2026";
     private ArrayList<Usuario> usuarios; //Cuentas disponibles durante la ejecución.
     private int siguienteCodigo; //Próximo número para construir un código interno.
     private String mensajeError; //Explicación de la última operación rechazada.
@@ -20,8 +22,22 @@ public class GestorUsuarios {
 
     /** Registra un MIEMBRO si los datos requeridos y los identificadores son válidos; devuelve null si falla. */
     public Usuario registrarUsuario(String nombreCompleto, String idBanner, String correo, String telefono, String contrasena) {
+        return registrarUsuario(nombreCompleto, idBanner, correo, telefono, contrasena, "MIEMBRO", "");
+    }
+
+    /**
+     * Registra un rol permitido y comprueba la autorización del encargado antes de crear la cuenta.
+     * El código fijo es únicamente una medida de demostración académica, no seguridad real.
+     */
+    public Usuario registrarUsuario(String nombreCompleto, String idBanner, String correo, String telefono,
+                                    String contrasena, String rol, String codigoAutorizacion) {
         mensajeError = "";
-        if (vacio(nombreCompleto)) mensajeError = "El nombre completo es obligatorio.";
+        if (!"MIEMBRO".equals(rol) && !"ENCARGADO".equals(rol)) {
+            mensajeError = "El rol debe ser MIEMBRO o ENCARGADO.";
+        } else if ("ENCARGADO".equals(rol)
+                && !CODIGO_AUTORIZACION_DEMO.equals(codigoAutorizacion)) {
+            mensajeError = "El código de autorización del encargado es incorrecto.";
+        } else if (vacio(nombreCompleto)) mensajeError = "El nombre completo es obligatorio.";
         else if (vacio(idBanner)) mensajeError = "El ID Banner es obligatorio.";
         else if (vacio(correo)) mensajeError = "El correo electrónico es obligatorio.";
         else if (vacio(telefono)) mensajeError = "El teléfono es obligatorio.";
@@ -32,7 +48,7 @@ public class GestorUsuarios {
 
         if (!mensajeError.isEmpty()) return null;
         Usuario usuario = new Usuario("U-" + siguienteCodigo, nombreCompleto.trim(), idBanner.trim(),
-                correo.trim(), telefono.trim(), contrasena, "MIEMBRO", "ACTIVA");
+                correo.trim(), telefono.trim(), contrasena, rol, "ACTIVA");
         siguienteCodigo++;
         usuarios.add(usuario);
         return usuario;
@@ -41,8 +57,8 @@ public class GestorUsuarios {
     /** Busca credenciales válidas; devuelve null si el correo, contraseña o estado no coinciden. */
     public Usuario iniciarSesion(String correo, String contrasena) {
         Usuario usuario = buscarPorCorreo(correo);
-        if (usuario != null && usuario.getEstadoCuenta().equals("ACTIVA")
-                && usuario.getContrasena().equals(contrasena)) return usuario;
+        if (usuario != null && "ACTIVA".equals(usuario.getEstadoCuenta())
+                && usuario.getContrasena() != null && usuario.getContrasena().equals(contrasena)) return usuario;
         return null;
     }
 

@@ -41,10 +41,11 @@ public class Ubicacion {
     /** Registra la entrada física de un objeto después de verificar capacidad y categoría. */
     public boolean registrarEntrada(ObjetoEncontrado objeto) {
         if (!validarEntrada(objeto)) return false;
-        // No se agrega el objeto a dos ubicaciones si todavía apunta a otra ubicación física.
-        if (objeto.getUbicacionActual() != null && objeto.getUbicacionActual() != this) return false;
+        // La entrada solo se registra después de que el objeto salió de su ubicación anterior.
+        if (objeto.getUbicacionActual() != null) return false;
         objetos.add(objeto);
         ocupacionActual++;
+        objeto.actualizarUbicacion(this);
         return true;
     }
 
@@ -69,7 +70,7 @@ public class Ubicacion {
 
     /** Comprueba una salida sin cambiar ocupación ni colecciones. */
     public boolean validarSalida(ObjetoEncontrado objeto) {
-        return objeto != null && objetos.contains(objeto);
+        return objeto != null && objetos.contains(objeto) && objeto.getUbicacionActual() == this;
     }
 
     public String getCodigoUbicacion(){

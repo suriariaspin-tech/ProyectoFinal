@@ -27,7 +27,7 @@ public class InterfazReportes {
     /** Solicita datos y registra un reporte de pérdida independiente. */
     public void registrarPerdida(Usuario usuario) {
         System.out.println("\n--- Registrar objeto perdido ---");
-        String categoria = Validacion.leerTextoObligatorio("Categoría: ");
+        String categoria = Validacion.seleccionarCategoria();
         String marca = Validacion.leerTextoOpcional("Marca (opcional, Enter para omitir): ");
         String color = Validacion.leerTextoObligatorio("Color: ");
         String descripcion = Validacion.leerTextoObligatorio("Descripción: ");
@@ -44,7 +44,7 @@ public class InterfazReportes {
     /** Solicita datos y registra un aviso de hallazgo todavía no recibido físicamente. */
     public void registrarHallazgo(Usuario usuario) {
         System.out.println("\n--- Registrar objeto encontrado ---");
-        String categoria = Validacion.leerTextoObligatorio("Categoría: ");
+        String categoria = Validacion.seleccionarCategoria();
         String marca = Validacion.leerTextoOpcional("Marca (opcional, Enter para omitir): ");
         String color = Validacion.leerTextoObligatorio("Color: ");
         String descripcion = Validacion.leerTextoObligatorio("Descripción: ");
@@ -89,7 +89,7 @@ public class InterfazReportes {
             return;
         }
         System.out.println("Ingrese los nuevos datos del reporte.");
-        String categoria = Validacion.leerTextoObligatorio("Categoría: ");
+        String categoria = Validacion.seleccionarCategoria();
         String marca = Validacion.leerTextoOpcional("Marca (opcional): ");
         String color = Validacion.leerTextoObligatorio("Color: ");
         String descripcion = Validacion.leerTextoObligatorio("Descripción: ");
@@ -122,7 +122,7 @@ public class InterfazReportes {
             System.out.println("El reporte no existe o no le pertenece.");
             return;
         }
-        String categoria = Validacion.leerTextoObligatorio("Categoría: ");
+        String categoria = Validacion.seleccionarCategoria();
         String marca = Validacion.leerTextoOpcional("Marca (opcional): ");
         String color = Validacion.leerTextoObligatorio("Color: ");
         String descripcion = Validacion.leerTextoObligatorio("Descripción: ");

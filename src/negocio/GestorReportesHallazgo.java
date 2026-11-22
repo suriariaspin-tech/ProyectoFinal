@@ -24,8 +24,9 @@ public class GestorReportesHallazgo {
                                      String lugar, String fotografia) {
         mensajeError = validar(reportante, categoria, color, descripcion, fecha, lugar);
         if (!mensajeError.isEmpty()) return null;
+        String categoriaNormalizada = normalizarCategoria(categoria);
         ReporteHallazgo reporte = new ReporteHallazgo("HAL-" + siguienteCodigo, reportante,
-                categoria.trim(), limpiarOpcional(marca), color.trim(), descripcion.trim(),
+                categoriaNormalizada, limpiarOpcional(marca), color.trim(), descripcion.trim(),
                 limpiarOpcional(caracteristicas), fecha, lugar.trim(), limpiarOpcional(fotografia), "PENDIENTE_RECEPCION");
         siguienteCodigo++;
         reportes.add(reporte);
@@ -44,7 +45,7 @@ public class GestorReportesHallazgo {
         else if (reporte.getObjetoEncontrado() != null) mensajeError = "El objeto ya fue recibido; sus datos no se pueden editar.";
         else mensajeError = validar(reportante, categoria, color, descripcion, fecha, lugar);
         if (!mensajeError.isEmpty()) return false;
-        reporte.setCategoria(categoria.trim());
+        reporte.setCategoria(normalizarCategoria(categoria));
         reporte.setMarca(limpiarOpcional(marca));
         reporte.setColor(color.trim());
         reporte.setDescripcion(descripcion.trim());
@@ -67,14 +68,29 @@ public class GestorReportesHallazgo {
     /** Valida el reportante, los textos requeridos y la fecha del hallazgo. */
     private String validar(Usuario reportante, String categoria, String color, String descripcion,
                            LocalDateTime fecha, String lugar) {
-        if (reportante == null) return "Debe iniciar sesión para registrar un hallazgo.";
+        if (reportante == null || !"MIEMBRO".equals(reportante.getRol())
+                || !"ACTIVA".equals(reportante.getEstadoCuenta())) {
+            return "Solo un miembro activo puede registrar o editar un hallazgo.";
+        }
         if (vacio(categoria)) return "La categoría es obligatoria.";
+        if (normalizarCategoria(categoria) == null) return "La categoría seleccionada no es válida.";
         if (vacio(color)) return "El color es obligatorio.";
         if (vacio(descripcion)) return "La descripción es obligatoria.";
         if (vacio(lugar)) return "El lugar donde se encontró es obligatorio.";
         if (fecha == null) return "La fecha del hallazgo es obligatoria.";
         if (fecha.isAfter(LocalDateTime.now())) return "La fecha del hallazgo no puede estar en el futuro.";
         return "";
+    }
+
+    /** Devuelve el nombre oficial de una categoría permitida o null si no existe. */
+    private String normalizarCategoria(String categoria) {
+        if (categoria == null) return null;
+        if (categoria.trim().equalsIgnoreCase("Accesorios")) return "Accesorios";
+        if (categoria.trim().equalsIgnoreCase("Electrónica")) return "Electrónica";
+        if (categoria.trim().equalsIgnoreCase("Ropa")) return "Ropa";
+        if (categoria.trim().equalsIgnoreCase("Documentos")) return "Documentos";
+        if (categoria.trim().equalsIgnoreCase("Otros")) return "Otros";
+        return null;
     }
 
     private boolean vacio(String texto){ //Comprueba si falta un dato de texto obligatorio.
